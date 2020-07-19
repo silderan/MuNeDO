@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>972</width>
+    <height>657</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MuNeDO (Multiple Network Device Observer)</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="0" column="0">
+     <widget class="QTabWidget" name="tabWidget">
+      <property name="currentIndex">
+       <number>-1</number>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>972</width>
+     <height>26</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuA_adir_Pesta_a">
+    <property name="title">
+     <string>Proyectos</string>
+    </property>
+    <addaction name="addTabAction"/>
+    <addaction name="delTabAction"/>
+   </widget>
+   <widget class="QMenu" name="menuGr_ficos">
+    <property name="title">
+     <string>Gráficos</string>
+    </property>
+    <addaction name="addGraphAction"/>
+    <addaction name="delGraphAction"/>
+   </widget>
+   <addaction name="menuA_adir_Pesta_a"/>
+   <addaction name="menuGr_ficos"/>
+  </widget>
+  <action name="addTabAction">
+   <property name="text">
+    <string>Abrir</string>
+   </property>
+  </action>
+  <action name="delTabAction">
+   <property name="text">
+    <string>Cerrar</string>
+   </property>
+  </action>
+  <action name="addGraphAction">
+   <property name="text">
+    <string>Añadir Gráfico</string>
+   </property>
+  </action>
+  <action name="delGraphAction">
+   <property name="text">
+    <string>Borrar Grafico</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
