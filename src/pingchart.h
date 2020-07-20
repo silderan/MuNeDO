@@ -29,6 +29,8 @@
 #include <QTimer>
 #include <QMap>
 #include <QValueAxis>
+#include <QDateTime>
+#include <QDateTimeAxis>
 #include <QThread>
 #include <QList>
 
@@ -61,11 +63,13 @@ using _qCharts = QT_CHARTS_NAMESPACE::QChart;
 using _qChartWidget = QT_CHARTS_NAMESPACE::QChartView;
 using _qLineSeries = QT_CHARTS_NAMESPACE::QLineSeries;
 using _qValueAxis = QT_CHARTS_NAMESPACE::QValueAxis;
+using _qTimeAxis = QT_CHARTS_NAMESPACE::QDateTimeAxis;
 #else
 using _qCharts = QChart;
 using _qChartWidget = QChartView;
 using _qLineSeries = QLineSeries;
 using _qValueAxis = QValueAxis;
+using _qTimeAxis = QDateTimeAxis;
 #endif
 
 struct BasicGraphLineConfig
@@ -91,14 +95,17 @@ class QBasicChart : public _qCharts
 	struct _line
 	{
 		_qLineSeries *series;
-		_qValueAxis *axisX;
+		_qTimeAxis *axisX;
 		_qValueAxis *axisY;
 		BasicGraphLineConfig mBasicGraphLineConfig;
 		_line()
 			: series(new _qLineSeries())
-			, axisX(new _qValueAxis())
+			, axisX(new _qTimeAxis())
 			, axisY(new _qValueAxis())
 		{
+			axisX->setTickCount(1);
+			axisX->setFormat("dd/MM/yy hh:mm:ss");
+			axisY->setLabelFormat("%ims");
 		}
 		_line(const _line &other)
 			: series(other.series)
@@ -113,27 +120,11 @@ class QBasicChart : public _qCharts
 			p.setWidth(1);
 			series->setPen(p);
 		}
-		void setup(const QString &hostName, const QColor &clr, bool hideIt)
-		{
-			series->attachAxis(axisX);
-			series->attachAxis(axisY);
-			series->setName(mBasicGraphLineConfig.mRemoteHost = hostName);
-			axisX->setTickCount(1);
-
-			axisX->setRange(0, 0);
-			axisY->setRange(0, 0);
-			if( hideIt )
-			{
-				axisX->hide();
-				axisY->hide();
-			}
-			changeColor(clr);
-		}
 	};
 	QMap<QString, _line> lines;
 
-	qreal mMaxAxisX;
-
+	QDateTime leftLimit;	// Right limit for x axis.
+	QDateTime rightLimit;	// Right limit for x axis.
 public:
 	explicit QBasicChart(QGraphicsItem *parent = Q_NULLPTR, Qt::WindowFlags wFlags = Qt::Widget);
 	_line &addLine(const QString &hostname, const QColor &clr);

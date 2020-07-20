@@ -26,6 +26,8 @@
 
 #include <QMenu>
 
+#include <QDebug>
+
 void WorkerThread::run()
 {
 	emit doJob(this);
@@ -36,7 +38,6 @@ QT_CHARTS_USE_NAMESPACE
 
 QBasicChart::QBasicChart(QGraphicsItem *parent, Qt::WindowFlags wFlags)
 	: QChart(QChart::ChartTypeCartesian, parent, wFlags)
-	, mMaxAxisX(0)
 {
 	setMargins( QMargins() );
 }
@@ -49,33 +50,52 @@ QBasicChart::_line &QBasicChart::addLine(const QString &hostname, const QColor &
 		line.changeColor(clr);
 		return line;
 	}
-	_line line;
+	lines.insert(hostname, _line());
+	_line &line = lines[hostname];
+
+	line.mBasicGraphLineConfig.mRemoteHost = hostname;
+	line.mBasicGraphLineConfig.mLineColor = clr;
 
 	addSeries(line.series);
 
 	addAxis(line.axisX, Qt::AlignBottom);
 	addAxis(line.axisY, Qt::AlignLeft);
 
-	line.setup(hostname, clr, lines.count() != 0 );
-	lines.insert(hostname, line);
-	return lines.last();
+	line.series->attachAxis(line.axisX);
+	line.series->attachAxis(line.axisY);
+	line.series->setName(hostname);
+
+	line.changeColor(clr);
+
+	if( !leftLimit.isValid() )
+	{
+		leftLimit = QDateTime::currentDateTime();
+		rightLimit = QDateTime::currentDateTime().addMSecs(1);
+	}
+	line.axisX->setRange( leftLimit, rightLimit );
+
+	if( lines.count() != 1 )
+	{
+		line.axisY->hide();
+		line.axisX->hide();
+	}
+
+	return line;
 }
 
 void QBasicChart::addValue(const QString &hostname, unsigned long value)
 {
 	Q_ASSERT( lines.contains(hostname) );
 
-	lines[hostname].series->append(mMaxAxisX, value);
-
-	mMaxAxisX++;
+	lines[hostname].series->append(QDateTime::currentMSecsSinceEpoch(), value);
 
 	for( const QString &host : lines.keys() )
 	{
 		_line &line = lines[host];
-		line.axisX->setMax(mMaxAxisX);
 
 		if( value > line.axisY->max() )
 			line.axisY->setMax(value);
+		line.axisX->setMax(QDateTime::currentDateTime());
 	}
 }
 
