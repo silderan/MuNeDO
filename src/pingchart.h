@@ -105,16 +105,15 @@ class QBasicChart : public _qCharts
 			, axisX(other.axisX)
 			, axisY(other.axisY)
 			, mBasicGraphLineConfig(other.mBasicGraphLineConfig)
-		{
+		{	}
 
-		}
 		void changeColor(const QColor &clr)
 		{
 			QPen p(mBasicGraphLineConfig.mLineColor = clr);
 			p.setWidth(1);
 			series->setPen(p);
 		}
-		void setup(const QString &hostName, const QColor &clr)
+		void setup(const QString &hostName, const QColor &clr, bool hideIt)
 		{
 			series->attachAxis(axisX);
 			series->attachAxis(axisY);
@@ -123,12 +122,17 @@ class QBasicChart : public _qCharts
 
 			axisX->setRange(0, 0);
 			axisY->setRange(0, 0);
+			if( hideIt )
+			{
+				axisX->hide();
+				axisY->hide();
+			}
 			changeColor(clr);
 		}
 	};
 	QMap<QString, _line> lines;
 
-	qreal mX;
+	qreal mMaxAxisX;
 
 public:
 	explicit QBasicChart(QGraphicsItem *parent = Q_NULLPTR, Qt::WindowFlags wFlags = Qt::Widget);

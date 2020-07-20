@@ -36,7 +36,7 @@ QT_CHARTS_USE_NAMESPACE
 
 QBasicChart::QBasicChart(QGraphicsItem *parent, Qt::WindowFlags wFlags)
 	: QChart(QChart::ChartTypeCartesian, parent, wFlags)
-	, mX(0)
+	, mMaxAxisX(0)
 {
 	setMargins( QMargins() );
 }
@@ -56,7 +56,7 @@ QBasicChart::_line &QBasicChart::addLine(const QString &hostname, const QColor &
 	addAxis(line.axisX, Qt::AlignBottom);
 	addAxis(line.axisY, Qt::AlignLeft);
 
-	line.setup(hostname, clr);
+	line.setup(hostname, clr, lines.count() != 0 );
 	lines.insert(hostname, line);
 	return lines.last();
 }
@@ -65,14 +65,18 @@ void QBasicChart::addValue(const QString &hostname, unsigned long value)
 {
 	Q_ASSERT( lines.contains(hostname) );
 
-	_line &line = lines[hostname];
+	lines[hostname].series->append(mMaxAxisX, value);
 
-	line.axisX->setMax(++mX);
+	mMaxAxisX++;
 
-	line.series->append(mX, value);
+	for( const QString &host : lines.keys() )
+	{
+		_line &line = lines[host];
+		line.axisX->setMax(mMaxAxisX);
 
-	if( value > line.axisY->max() )
-		line.axisY->setMax(value);
+		if( value > line.axisY->max() )
+			line.axisY->setMax(value);
+	}
 }
 
 QBasicGraphLineConfigList QBasicChart::basicGraphLineConfigList()
