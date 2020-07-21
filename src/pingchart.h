@@ -123,6 +123,7 @@ class QBasicChart : public _qCharts
 	};
 	QMap<QString, _line> lines;
 
+	QDateTime mInitialTime;	// Initial Time for x axis.
 	QDateTime leftLimit;	// Right limit for x axis.
 	QDateTime rightLimit;	// Right limit for x axis.
 public:
@@ -135,6 +136,12 @@ public:
 
 	void addValue(const QString &hostname, unsigned long value);
 	QBasicGraphLineConfigList basicGraphLineConfigList();
+	void setInitialTime(const QDateTime &initialTime);
+
+	// Set times to be shown in graph.
+	// If firstTime is invalid, it defaults to initialTime
+	// If lastTime is invalid, it defaults to currentTime.
+	void setTimes(const QDateTime &firstTime, const QDateTime &lastTime);
 };
 
 class QTabGraphHolder;
@@ -152,6 +159,7 @@ protected:
 
 	WorkerThread *getFreeThread();
 	void showContextMenu(const QPoint &pos);
+
 public:
 	QChartWidget(QTabGraphHolder *graphHolder)
 		: _qChartWidget(mChart = new QBasicChart)
@@ -165,6 +173,11 @@ public:
 	virtual void editGraph() = 0;
 
 	void addHost(const QString &hostname, const QColor &clr);
+	void setInitialTime(const QDateTime &initialTime)	{ mChart->setInitialTime(initialTime);	}
+	// Set times to be shown in graph.
+	// If firstTime is invalid, it defaults to initialTime
+	// If lastTime is invalid, it defaults to currentTime.
+	void setTimes(const QDateTime &firstTime, const QDateTime &lastTime)	{ mChart->setTimes(firstTime, lastTime);	}
 
 	virtual void on_DoJob(WorkerThread *wt) = 0;
 	virtual void on_ResultReady(WorkerThread *wt) = 0;

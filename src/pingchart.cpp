@@ -67,12 +67,8 @@ QBasicChart::_line &QBasicChart::addLine(const QString &hostname, const QColor &
 
 	line.changeColor(clr);
 
-	if( !leftLimit.isValid() )
-	{
-		leftLimit = QDateTime::currentDateTime();
-		rightLimit = QDateTime::currentDateTime().addMSecs(1);
-	}
-	line.axisX->setRange( leftLimit, rightLimit );
+	line.axisX->setRange( leftLimit.isValid() ? leftLimit : mInitialTime.isValid() ? mInitialTime : QDateTime::currentDateTime(),
+						  rightLimit.isValid() ? rightLimit : QDateTime::currentDateTime().addMSecs(1) );
 
 	if( lines.count() != 1 )
 	{
@@ -95,7 +91,8 @@ void QBasicChart::addValue(const QString &hostname, unsigned long value)
 
 		if( value > line.axisY->max() )
 			line.axisY->setMax(value);
-		line.axisX->setMax(QDateTime::currentDateTime());
+		if( !rightLimit.isValid() )
+			line.axisX->setMax(QDateTime::currentDateTime());
 	}
 }
 
@@ -107,6 +104,25 @@ QBasicGraphLineConfigList QBasicChart::basicGraphLineConfigList()
 		rtn.append( BasicGraphLineConfig(l.mBasicGraphLineConfig.mRemoteHost, l.mBasicGraphLineConfig.mLineColor) );
 	}
 	return rtn;
+}
+
+void QBasicChart::setInitialTime(const QDateTime &initialTime)
+{
+	mInitialTime = initialTime;
+	for( const QString &host : lines.keys() )
+		lines[host].axisX->setMin(initialTime);
+}
+
+void QBasicChart::setTimes(const QDateTime &firstTime, const QDateTime &lastTime)
+{
+	leftLimit = firstTime.isValid() ? firstTime : mInitialTime;
+	rightLimit = lastTime;
+
+	for( const QString &host : lines.keys() )
+	{
+		_line &line = lines[host];
+		line.axisX->setRange( leftLimit, rightLimit.isValid() ? rightLimit : QDateTime::currentDateTime() );
+	}
 }
 
 void QChartWidget::showContextMenu(const QPoint &pos)
@@ -152,6 +168,7 @@ void QChartWidget::addHost(const QString &hostname, const QColor &clr)
 	chart()->addLine(hostname, clr);
 	mGraphicLineConfigList.append(BasicGraphLineConfig(hostname, clr));
 }
+
 
 #include "DlgEditPingGraph.h"
 void QPingChartWidget::editGraph()

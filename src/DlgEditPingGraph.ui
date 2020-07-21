@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>356</width>
-    <height>340</height>
+    <height>363</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -143,6 +143,29 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>host1LineEdit</tabstop>
+  <tabstop>host1Button</tabstop>
+  <tabstop>host2LineEdit</tabstop>
+  <tabstop>host2Button</tabstop>
+  <tabstop>host3LineEdit</tabstop>
+  <tabstop>host3Button</tabstop>
+  <tabstop>host4LineEdit</tabstop>
+  <tabstop>host4Button</tabstop>
+  <tabstop>host5LineEdit</tabstop>
+  <tabstop>host5Button</tabstop>
+  <tabstop>host6LineEdit</tabstop>
+  <tabstop>host6Button</tabstop>
+  <tabstop>host7LineEdit</tabstop>
+  <tabstop>host7Button</tabstop>
+  <tabstop>host8LineEdit</tabstop>
+  <tabstop>host8Button</tabstop>
+  <tabstop>host9LineEdit</tabstop>
+  <tabstop>host9Button</tabstop>
+  <tabstop>host10LineEdit</tabstop>
+  <tabstop>host10Button</tabstop>
+  <tabstop>acceptButton</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

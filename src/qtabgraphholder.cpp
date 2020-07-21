@@ -35,6 +35,7 @@ QTabGraphHolder::QTabGraphHolder(QWidget *papi)
 	, mBackgroundLabel(Q_NULLPTR)
 	, mProjectManager("")
 	, mAddGraphAction( new QAction( tr("Añadir Gráfica"), this) )
+	, mPlaying(false)
 {
 	setContextMenuPolicy(Qt::CustomContextMenu);
 
@@ -65,6 +66,11 @@ void QTabGraphHolder::showContextMenu(const QPoint &pos)
 	contextMenu.exec(mapToGlobal(pos));
 }
 
+void QTabGraphHolder::leftLimitChanged(int newVal)
+{
+
+}
+
 ProjectManager::ProjectManager_ErrorCode QTabGraphHolder::loadProject(const QString &projectFolder)
 {
 	ProjectManager::ProjectManager_ErrorCode err = mProjectManager.loadProject(projectFolder);
@@ -92,11 +98,14 @@ ProjectManager::ProjectManager_ErrorCode QTabGraphHolder::loadProject(const QStr
 		horizontalSlider = new QSlider(this);
 		horizontalSlider->setObjectName(QString::fromUtf8("horizontalSlider"));
 		horizontalSlider->setOrientation(Qt::Horizontal);
+		horizontalSlider->setRange(0, 0);
+		connect( horizontalSlider, &QSlider::valueChanged, this, &QTabGraphHolder::leftLimitChanged );
 
 		gridLayout_2->addWidget(horizontalSlider, 1, 0, 1, 1);
 
 		playButton = new QToolButton(this);
 		playButton->setObjectName(QString::fromUtf8("playButton"));
+		connect( playButton, &QToolButton::clicked, this, &QTabGraphHolder::play );
 
 		gridLayout_2->addWidget(playButton, 1, 1, 1, 1);
 		addBackgroudLabel();
@@ -116,6 +125,7 @@ void QTabGraphHolder::addGraphView()
 	mGraphList.append(newGraph);
 
 	newGraph->editGraph();
+	newGraph->setInitialTime(mInitialTime);
 }
 
 // Called when a new graph wants to be added in holder.
@@ -125,8 +135,26 @@ void QTabGraphHolder::addGraphRequest()
 	addGraphView();
 }
 
+void QTabGraphHolder::play()
+{
+	if( !mPlaying )
+	{
+		mPlaying = true;
+		if( !mInitialTime.isValid() )
+		{
+			mLeftTime = mInitialTime = QDateTime::currentDateTime();
+			mRightTime = mInitialTime.addSecs(1);
+		}
+		for( QChartWidget *graph : mGraphList )
+			graph->setInitialTime(mInitialTime);
+	}
+	else
+		mPlaying = false;
+}
+
 void QTabGraphHolder::heartbeat()
 {
-	for( QChartWidget *graph : mGraphList )
-		graph->heartbeat();
+	if( mPlaying )
+		for( QChartWidget *graph : mGraphList )
+			graph->heartbeat();
 }

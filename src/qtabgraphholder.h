@@ -48,11 +48,17 @@ class QTabGraphHolder : public QWidget
 
 	ProjectManager mProjectManager;
 	QAction *mAddGraphAction;
+	bool mPlaying;
+	QDateTime mInitialTime;
+	QDateTime mLeftTime;
+	QDateTime mRightTime;
 
 	void addBackgroudLabel();
 	void removeBackgroudLabel();
 
 	void showContextMenu(const QPoint &pos);
+
+	void leftLimitChanged(int newVal);
 
 public:
 	QTabGraphHolder(QWidget *papi = nullptr);
@@ -67,6 +73,7 @@ public:
 	QString projectDescription() const	{ return mProjectManager.projectDescription();	}
 
 	void addGraphRequest();
+	void play();
 	void heartbeat();
 };
 
