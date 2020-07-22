@@ -19,33 +19,36 @@
   If not, see <http://www.gnu.org/licenses/>.
 
 **************************************************************************/
+#ifndef DLGEDITPINGGRAPH_H
+#define DLGEDITPINGGRAPH_H
 
-#ifndef GRAPHWIDGET_H
-#define GRAPHWIDGET_H
+#include <QDialog>
 
-#include <QDateTime>
+#include "QPingChartWidget.h"
 
-#include "pingchart.h"
-
-struct GraphConfigData
+namespace Ui
 {
-	QString hostAddr;
-	bool doPing;
+	class DlgEditPingGraph;
+}
 
+class QToolButton;
 
-	GraphConfigData() :
-		doPing(false)
-	{	}
+class DlgEditPingGraph : public QDialog
+{
+	Q_OBJECT
+
+	Ui::DlgEditPingGraph *ui;
+	QBasicGraphLineConfigList &mGraphLineConfigList;
+
+	void setButtonColor(QToolButton *btn, const QColor &clr);
+	QColor getButtonColor(QToolButton *btn);
+
+public:
+	explicit DlgEditPingGraph(QBasicGraphLineConfigList &graphLineConfigList, QWidget *parent);
+	~DlgEditPingGraph();
+
+private slots:
+	void on_acceptButton_clicked();
 };
 
-struct GraphData
-{
-	QDateTime firstDate;
-};
-
-struct GraphPingData : public GraphData
-{
-	QList<uchar> delays;
-};
-
-#endif // GRAPHWIDGET_H
+#endif // DLGEDITPINGGRAPH_H

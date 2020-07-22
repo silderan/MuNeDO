@@ -20,33 +20,33 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-    DlgEditPingGraph.cpp \
-    QIniFile.cpp \
-    Utils.cpp \
-    dlgnewtab.cpp \
-    graphwidget.cpp \
-    main.cpp \
+	Basic/QIniFile.cpp \
+	Basic/Utils.cpp \
+	Basic/ping.cpp \
+	Dialogs/DlgEditPingGraph.cpp \
+	Dialogs/DlgNewTab.cpp \
+    QBasicChartWidget.cpp \
+	QPingChartWidget.cpp \
+    QTabChartHolder.cpp \
+	main.cpp \
     mainwindow.cpp \
-    ping.cpp \
-    pingchart.cpp \
-    projectmanager.cpp \
-    qtabgraphholder.cpp
+    projectmanager.cpp
 
 HEADERS += \
-    DlgEditPingGraph.h \
-    QIniFile.h \
-    Utils.h \
-    dlgnewtab.h \
-    graphwidget.h \
-    mainwindow.h \
-    ping.h \
-    pingchart.h \
-    projectmanager.h \
-    qtabgraphholder.h
+	Basic/QIniFile.h \
+	Basic/Utils.h \
+	Basic/ping.h \
+	Dialogs/DlgEditPingGraph.h \
+	Dialogs/DlgNewTab.h \
+    QBasicChartWidget.h \
+	QPingChartWidget.h \
+    QTabChartHolder.h \
+	mainwindow.h \
+    projectmanager.h
 
 FORMS += \
-    DlgEditPingGraph.ui \
-    dlgnewtab.ui \
+	Dialogs/DlgEditPingGraph.ui \
+	Dialogs/dlgnewtab.ui \
     mainwindow.ui
 
 TRANSLATIONS += \

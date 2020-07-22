@@ -20,4 +20,20 @@
 
 **************************************************************************/
 
-#include "graphwidget.h"
+#ifndef QPINGCHART_H
+#define QPINGCHART_H
+
+#include "QBasicChartWidget.h"
+
+class QPingChartWidget : public QBasicChartWidget
+{
+public:
+	QPingChartWidget(QTabChartHolder *graphHolder)
+		: QBasicChartWidget(graphHolder)
+	{	}
+	virtual void editGraph() override;
+	virtual void on_DoJob(WorkerThread *wt) override;
+	virtual void on_ResultReady(WorkerThread *wt) override;
+};
+
+#endif // QPINGCHART_H

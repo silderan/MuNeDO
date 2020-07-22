@@ -23,8 +23,8 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-#include "qtabgraphholder.h"
-#include "dlgnewtab.h"
+#include "QTabChartHolder.h"
+#include "Dialogs/DlgNewTab.h"
 #include "projectmanager.h"
 
 MainWindow::MainWindow(QWidget *parent)
@@ -45,7 +45,7 @@ MainWindow::~MainWindow()
 void MainWindow::heartbeat()
 {
 	for( int i = 0; i < ui->tabWidget->count(); ++i )
-		static_cast<QTabGraphHolder*>(ui->tabWidget->widget(i))->heartbeat();
+		static_cast<QTabChartHolder*>(ui->tabWidget->widget(i))->heartbeat();
 }
 
 // Action del menú para añadir una nueva pestaña de proyecto.
@@ -56,7 +56,7 @@ void MainWindow::on_addTabAction_triggered()
 	DlgNewTab dlg(openedProjectFolders(), this);
 	if( dlg.exec() )
 	{
-		QTabGraphHolder *tab = new QTabGraphHolder(Q_NULLPTR);
+		QTabChartHolder *tab = new QTabChartHolder(Q_NULLPTR);
 		if( tab->loadProject(dlg.projectFolder()) == ProjectManager::ProjectManager_ErrorCode::NoError )
 			ui->tabWidget->addTab(tab, tab->projectName());
 		else
@@ -71,7 +71,7 @@ void MainWindow::on_delTabAction_triggered()
 
 void MainWindow::on_addGraphAction_triggered()
 {
-	if( QTabGraphHolder*tab = static_cast<QTabGraphHolder*>(ui->tabWidget->currentWidget()) )
+	if( QTabChartHolder*tab = static_cast<QTabChartHolder*>(ui->tabWidget->currentWidget()) )
 	{
 		tab->addGraphView();
 	}
@@ -91,7 +91,7 @@ QStringList MainWindow::openedProjectFolders() const
 {
 	QStringList rtnLst;
 	for( int i = 0; i < ui->tabWidget->count(); ++i )
-		rtnLst.append( static_cast<const QTabGraphHolder*>(ui->tabWidget->widget(i))->projectFolder() );
+		rtnLst.append( static_cast<const QTabChartHolder*>(ui->tabWidget->widget(i))->projectFolder() );
 	return rtnLst;
 }
 

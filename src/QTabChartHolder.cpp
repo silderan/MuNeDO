@@ -20,11 +20,11 @@
 
 **************************************************************************/
 
-#include "qtabgraphholder.h"
+#include "QTabChartHolder.h"
 
 #include <QMenu>
 
-QTabGraphHolder::QTabGraphHolder(QWidget *papi)
+QTabChartHolder::QTabChartHolder(QWidget *papi)
 	: QWidget(papi)
 	, gridLayout_2(Q_NULLPTR)
 	, verticalLayout(Q_NULLPTR)
@@ -39,24 +39,24 @@ QTabGraphHolder::QTabGraphHolder(QWidget *papi)
 {
 	setContextMenuPolicy(Qt::CustomContextMenu);
 
-	connect( this, &QTabGraphHolder::customContextMenuRequested, this, &QTabGraphHolder::showContextMenu);
-	connect( mAddGraphAction, &QAction::triggered, this, &QTabGraphHolder::addGraphRequest );
+	connect( this, &QTabChartHolder::customContextMenuRequested, this, &QTabChartHolder::showContextMenu);
+	connect( mAddGraphAction, &QAction::triggered, this, &QTabChartHolder::addGraphRequest );
 }
 
-void QTabGraphHolder::addBackgroudLabel()
+void QTabChartHolder::addBackgroudLabel()
 {
-	Q_ASSERT(mGraphList.isEmpty());
+	Q_ASSERT(mChartList.isEmpty());
 	mBackgroundLabel = new QLabel( tr("\tClick derecho para abrir menú y añadir gráficos") );
 	verticalLayout->addWidget(mBackgroundLabel);
 }
 
-void QTabGraphHolder::removeBackgroudLabel()
+void QTabChartHolder::removeBackgroudLabel()
 {
 	mBackgroundLabel->deleteLater();
 	mBackgroundLabel = Q_NULLPTR;
 }
 
-void QTabGraphHolder::showContextMenu(const QPoint &pos)
+void QTabChartHolder::showContextMenu(const QPoint &pos)
 {
 	QMenu contextMenu( tr("Basic context menu"), this);
 
@@ -66,12 +66,12 @@ void QTabGraphHolder::showContextMenu(const QPoint &pos)
 	contextMenu.exec(mapToGlobal(pos));
 }
 
-void QTabGraphHolder::leftLimitChanged(int newVal)
+void QTabChartHolder::leftLimitChanged(int newVal)
 {
 
 }
 
-ProjectManager::ProjectManager_ErrorCode QTabGraphHolder::loadProject(const QString &projectFolder)
+ProjectManager::ProjectManager_ErrorCode QTabChartHolder::loadProject(const QString &projectFolder)
 {
 	ProjectManager::ProjectManager_ErrorCode err = mProjectManager.loadProject(projectFolder);
 
@@ -99,13 +99,13 @@ ProjectManager::ProjectManager_ErrorCode QTabGraphHolder::loadProject(const QStr
 		horizontalSlider->setObjectName(QString::fromUtf8("horizontalSlider"));
 		horizontalSlider->setOrientation(Qt::Horizontal);
 		horizontalSlider->setRange(0, 0);
-		connect( horizontalSlider, &QSlider::valueChanged, this, &QTabGraphHolder::leftLimitChanged );
+		connect( horizontalSlider, &QSlider::valueChanged, this, &QTabChartHolder::leftLimitChanged );
 
 		gridLayout_2->addWidget(horizontalSlider, 1, 0, 1, 1);
 
 		playButton = new QToolButton(this);
 		playButton->setObjectName(QString::fromUtf8("playButton"));
-		connect( playButton, &QToolButton::clicked, this, &QTabGraphHolder::play );
+		connect( playButton, &QToolButton::clicked, this, &QTabChartHolder::play );
 
 		gridLayout_2->addWidget(playButton, 1, 1, 1, 1);
 		addBackgroudLabel();
@@ -114,7 +114,7 @@ ProjectManager::ProjectManager_ErrorCode QTabGraphHolder::loadProject(const QStr
 }
 
 // TODO: Esta función debe cambiar mucho porque debe decidir/recibir el tipo de gráfico a crear.
-void QTabGraphHolder::addGraphView()
+void QTabChartHolder::addGraphView()
 {
 	removeBackgroudLabel();
 	QPingChartWidget *newGraph = new QPingChartWidget(this);
@@ -122,20 +122,21 @@ void QTabGraphHolder::addGraphView()
 
 	newGraph->setMinimumHeight(200);
 	verticalLayout->addWidget(newGraph);
-	mGraphList.append(newGraph);
+	mChartList.append(newGraph);
 
 	newGraph->editGraph();
 	newGraph->setInitialTime(mInitialTime);
+	newGraph->setTimes(mLeftTime, mRightTime);
 }
 
 // Called when a new graph wants to be added in holder.
 // Usually, through context menu.
-void QTabGraphHolder::addGraphRequest()
+void QTabChartHolder::addGraphRequest()
 {
 	addGraphView();
 }
 
-void QTabGraphHolder::play()
+void QTabChartHolder::play()
 {
 	if( !mPlaying )
 	{
@@ -145,16 +146,16 @@ void QTabGraphHolder::play()
 			mLeftTime = mInitialTime = QDateTime::currentDateTime();
 			mRightTime = mInitialTime.addSecs(1);
 		}
-		for( QChartWidget *graph : mGraphList )
+		for( QBasicChartWidget *graph : mChartList )
 			graph->setInitialTime(mInitialTime);
 	}
 	else
 		mPlaying = false;
 }
 
-void QTabGraphHolder::heartbeat()
+void QTabChartHolder::heartbeat()
 {
 	if( mPlaying )
-		for( QChartWidget *graph : mGraphList )
+		for( QBasicChartWidget *graph : mChartList )
 			graph->heartbeat();
 }

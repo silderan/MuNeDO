@@ -19,36 +19,33 @@
   If not, see <http://www.gnu.org/licenses/>.
 
 **************************************************************************/
-#ifndef DLGEDITPINGGRAPH_H
-#define DLGEDITPINGGRAPH_H
 
-#include <QDialog>
+#include "QPingChartWidget.h"
+#include "Basic/ping.h"
 
-#include "pingchart.h"
+#include <QMenu>
 
-namespace Ui
+#include <QDebug>
+
+#include "Dialogs/DlgEditPingGraph.h"
+
+
+void QPingChartWidget::editGraph()
 {
-	class DlgEditPingGraph;
+	DlgEditPingGraph dlg(mGraphicLineConfigList, this);
+	if( dlg.exec() )
+	{
+		for( BasicGraphLineConfig &bglc : mGraphicLineConfigList )
+			chart()->addLine(bglc);
+	}
 }
 
-class QToolButton;
-
-class DlgEditPingGraph : public QDialog
+void QPingChartWidget::on_DoJob(WorkerThread *wt)
 {
-	Q_OBJECT
+	wt->setResultData( QVariant().fromValue(pingDelay(wt->hostname())) );
+}
 
-	Ui::DlgEditPingGraph *ui;
-	QBasicGraphLineConfigList &mGraphLineConfigList;
-
-	void setButtonColor(QToolButton *btn, const QColor &clr);
-	QColor getButtonColor(QToolButton *btn);
-
-public:
-	explicit DlgEditPingGraph(QBasicGraphLineConfigList &graphLineConfigList, QWidget *parent);
-	~DlgEditPingGraph();
-
-private slots:
-	void on_acceptButton_clicked();
-};
-
-#endif // DLGEDITPINGGRAPH_H
+void QPingChartWidget::on_ResultReady(WorkerThread *wt)
+{
+	chart()->addValue( wt->hostname(), wt->resultData().toUInt() );
+}

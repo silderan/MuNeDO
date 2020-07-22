@@ -19,9 +19,8 @@
   If not, see <http://www.gnu.org/licenses/>.
 
 **************************************************************************/
-
-#ifndef QPINGCHART_H
-#define QPINGCHART_H
+#ifndef QBASICCHARTWIDGET_H
+#define QBASICCHARTWIDGET_H
 
 #include <QChart>
 #include <QChartView>
@@ -33,6 +32,7 @@
 #include <QDateTimeAxis>
 #include <QThread>
 #include <QList>
+
 
 class WorkerThread : public QThread
 {
@@ -57,7 +57,6 @@ signals:
 	void doJob(WorkerThread *thread);
 };
 
-
 #ifdef QT_CHARTS_NAMESPACE
 using _qCharts = QT_CHARTS_NAMESPACE::QChart;
 using _qChartWidget = QT_CHARTS_NAMESPACE::QChartView;
@@ -71,6 +70,7 @@ using _qLineSeries = QLineSeries;
 using _qValueAxis = QValueAxis;
 using _qTimeAxis = QDateTimeAxis;
 #endif
+
 
 struct BasicGraphLineConfig
 {
@@ -144,9 +144,9 @@ public:
 	void setTimes(const QDateTime &firstTime, const QDateTime &lastTime);
 };
 
-class QTabGraphHolder;
+class QTabChartHolder;
 
-class QChartWidget : public _qChartWidget
+class QBasicChartWidget : public _qChartWidget
 {
 	QBasicChart *mChart;
 
@@ -154,20 +154,20 @@ protected:
 	QList<WorkerThread*> mAllThreads;
 	QBasicChart *chart()				{ return mChart;	}
 	const QBasicChart *chart() const	{ return mChart;	}
-	QTabGraphHolder *mGraphHolder;
+	QTabChartHolder *mGraphHolder;
 	QBasicGraphLineConfigList mGraphicLineConfigList;
 
 	WorkerThread *getFreeThread();
 	void showContextMenu(const QPoint &pos);
 
 public:
-	QChartWidget(QTabGraphHolder *graphHolder)
+	QBasicChartWidget(QTabChartHolder *graphHolder)
 		: _qChartWidget(mChart = new QBasicChart)
 		, mGraphHolder(graphHolder)
 	{
 		setContextMenuPolicy(Qt::CustomContextMenu);
 
-		connect(this, &QChartWidget::customContextMenuRequested, this, &QChartWidget::showContextMenu);
+		connect(this, &QBasicChartWidget::customContextMenuRequested, this, &QBasicChartWidget::showContextMenu);
 	}
 	void heartbeat();
 	virtual void editGraph() = 0;
@@ -182,16 +182,4 @@ public:
 	virtual void on_DoJob(WorkerThread *wt) = 0;
 	virtual void on_ResultReady(WorkerThread *wt) = 0;
 };
-
-class QPingChartWidget : public QChartWidget
-{
-public:
-	QPingChartWidget(QTabGraphHolder *graphHolder)
-		: QChartWidget(graphHolder)
-	{	}
-	virtual void editGraph() override;
-	virtual void on_DoJob(WorkerThread *wt) override;
-	virtual void on_ResultReady(WorkerThread *wt) override;
-};
-
-#endif // QPINGCHART_H
+#endif // QBASICCHARTWIDGET_H

@@ -20,7 +20,7 @@
 
 **************************************************************************/
 
-#include "dlgnewtab.h"
+#include "DlgNewTab.h"
 #include "ui_dlgnewtab.h"
 
 #include <QDir>

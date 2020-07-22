@@ -19,14 +19,12 @@
   If not, see <http://www.gnu.org/licenses/>.
 
 **************************************************************************/
+#include "QBasicChartWidget.h"
 
-#include "pingchart.h"
-#include "ping.h"
-#include "qtabgraphholder.h"
-
+#include <QAction>
 #include <QMenu>
 
-#include <QDebug>
+#include "QTabChartHolder.h"
 
 void WorkerThread::run()
 {
@@ -125,7 +123,7 @@ void QBasicChart::setTimes(const QDateTime &firstTime, const QDateTime &lastTime
 	}
 }
 
-void QChartWidget::showContextMenu(const QPoint &pos)
+void QBasicChartWidget::showContextMenu(const QPoint &pos)
 {
 	QMenu contextMenu( tr("Graph context menu"), this);
 
@@ -133,13 +131,13 @@ void QChartWidget::showContextMenu(const QPoint &pos)
 		contextMenu.addAction(action);
 
 	QAction editGraph( tr("Editar gráfico"), this);
-	connect( &editGraph, &QAction::triggered, this, &QChartWidget::editGraph );
+	connect( &editGraph, &QAction::triggered, this, &QBasicChartWidget::editGraph );
 	contextMenu.addAction( &editGraph );
 
 	contextMenu.exec(mapToGlobal(pos));
 }
 
-WorkerThread *QChartWidget::getFreeThread()
+WorkerThread *QBasicChartWidget::getFreeThread()
 {
 	for( WorkerThread *hilo : mAllThreads )
 		if( hilo->isFinished() )
@@ -147,13 +145,13 @@ WorkerThread *QChartWidget::getFreeThread()
 
 	WorkerThread *workerThread = new WorkerThread();
 	mAllThreads.append(workerThread);
-	connect(workerThread, &WorkerThread::doJob, this, &QChartWidget::on_DoJob);
-	connect(workerThread, &WorkerThread::resultReady, this, &QChartWidget::on_ResultReady);
+	connect(workerThread, &WorkerThread::doJob, this, &QBasicChartWidget::on_DoJob);
+	connect(workerThread, &WorkerThread::resultReady, this, &QBasicChartWidget::on_ResultReady);
 
 	return workerThread;
 }
 
-void QChartWidget::heartbeat()
+void QBasicChartWidget::heartbeat()
 {
 	for( BasicGraphLineConfig &cnfg : mGraphicLineConfigList )
 	{
@@ -163,30 +161,8 @@ void QChartWidget::heartbeat()
 	}
 }
 
-void QChartWidget::addHost(const QString &hostname, const QColor &clr)
+void QBasicChartWidget::addHost(const QString &hostname, const QColor &clr)
 {
 	chart()->addLine(hostname, clr);
 	mGraphicLineConfigList.append(BasicGraphLineConfig(hostname, clr));
-}
-
-
-#include "DlgEditPingGraph.h"
-void QPingChartWidget::editGraph()
-{
-	DlgEditPingGraph dlg(mGraphicLineConfigList, this);
-	if( dlg.exec() )
-	{
-		for( BasicGraphLineConfig &bglc : mGraphicLineConfigList )
-			chart()->addLine(bglc);
-	}
-}
-
-void QPingChartWidget::on_DoJob(WorkerThread *wt)
-{
-	wt->setResultData( QVariant().fromValue(pingDelay(wt->hostname())) );
-}
-
-void QPingChartWidget::on_ResultReady(WorkerThread *wt)
-{
-	chart()->addValue( wt->hostname(), wt->resultData().toUInt() );
 }

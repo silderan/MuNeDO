@@ -29,20 +29,20 @@
 #include <QtWidgets/QSlider>
 #include <QToolButton>
 
-#include "graphwidget.h"
+#include "QPingChartWidget.h"
 #include "projectmanager.h"
 
 #include <QList>
 #include <QLabel>
 
-class QTabGraphHolder : public QWidget
+class QTabChartHolder : public QWidget
 {
 	QGridLayout *gridLayout_2;
 	QVBoxLayout *verticalLayout;
 	QScrollArea *scrollArea;
 	QWidget *scrollAreaWidgetContents;
 	QSlider *horizontalSlider;
-	QList<QChartWidget*> mGraphList;
+	QList<QBasicChartWidget*> mChartList;
 	QToolButton *playButton;
 	QLabel *mBackgroundLabel;
 
@@ -61,7 +61,7 @@ class QTabGraphHolder : public QWidget
 	void leftLimitChanged(int newVal);
 
 public:
-	QTabGraphHolder(QWidget *papi = nullptr);
+	QTabChartHolder(QWidget *papi = nullptr);
 
 	QList<QAction*> contextMenuActionList()	{ return QList<QAction*>() << mAddGraphAction;	}
 
