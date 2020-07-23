@@ -24,6 +24,8 @@
 #include <QAction>
 #include <QMenu>
 
+#include <QDebug>
+
 #include "QTabChartHolder.h"
 
 void WorkerThread::run()
@@ -68,6 +70,7 @@ QBasicChart::_line &QBasicChart::addLine(const QString &hostname, const QColor &
 	line.axisX->setRange( leftLimit.isValid() ? leftLimit : mInitialTime.isValid() ? mInitialTime : QDateTime::currentDateTime(),
 						  rightLimit.isValid() ? rightLimit : QDateTime::currentDateTime().addMSecs(1) );
 
+	// If it's the first line, it must be visible. The other ones muy be hiden.
 	if( lines.count() != 1 )
 	{
 		line.axisY->hide();
@@ -77,10 +80,79 @@ QBasicChart::_line &QBasicChart::addLine(const QString &hostname, const QColor &
 	return line;
 }
 
+void QBasicChart::delLine(const BasicGraphLineConfig &bglc)
+{
+	_line line = lines[bglc.mRemoteHost];
+	removeAxis( line.axisX );
+	removeAxis( line.axisY );
+	removeSeries( line.series );
+	lines.remove( bglc.mRemoteHost );
+
+	// If line is visible, as it's gona be removed, visibility goes to another one.
+	if( line.axisX->isVisible() && lines.count() )
+	{
+		lines.first().axisX->show();
+		lines.first().axisY->show();
+	}
+	line.axisX->deleteLater();
+	line.axisX = Q_NULLPTR;
+	line.axisY->deleteLater();
+	line.axisY = Q_NULLPTR;
+	line.series->deleteLater();
+	line.series = Q_NULLPTR;
+
+	updateChartMaxAxis();
+}
+
+// Called when time axis is modified or when a line is removed.
+// This updates Y axis values acordigly to the visible values.
+void QBasicChart::updateChartMaxAxis()
+{
+	qreal newMax = 0;
+	qreal minTime = leftLimit.isValid() ? leftLimit.toMSecsSinceEpoch() : 0;
+	qreal maxTime = rightLimit.isValid() ? rightLimit.toMSecsSinceEpoch() : QDateTime::currentMSecsSinceEpoch();
+	qreal curTime;
+	for( const _line &line : lines )
+	{
+		for( int i = line.series->count()-1; i>=0; --i )
+		{
+			curTime = line.series->at(i).x();
+			if( (curTime >= minTime) && (curTime <= maxTime) )
+			{
+				if( newMax < line.series->at(i).y() )
+					newMax = line.series->at(i).y();
+			}
+		}
+	}
+	setValueRange(0, newMax);
+}
+
+void QBasicChart::setValueRange(const qreal &min, const qreal &max)
+{
+	for( _line &line : lines )
+		line.axisY->setRange(min, max);
+}
+
+void QBasicChart::setTimeRange(const qreal &minMSec, const qreal &maxMSec)
+{
+	setTimeRange( QDateTime::fromMSecsSinceEpoch(qint64(minMSec)), QDateTime::fromMSecsSinceEpoch(qint64(maxMSec)) );
+}
+
+void QBasicChart::setTimeRange(const QDateTime &minTime, const QDateTime &maxTime)
+{
+	for( _line &line : lines )
+		line.axisX->setRange( minTime, maxTime );
+}
+
 void QBasicChart::addValue(const QString &hostname, unsigned long value)
 {
-	Q_ASSERT( lines.contains(hostname) );
+	if( not lines.contains(hostname) )
+	{
+		qDebug() << "En las lineas del gráfico, no existe el hostname " << hostname <<". Quizá se haya borrado.";
+		return;
+	}
 
+	qDebug() << "Adding in " << hostname << ": " << value << " at " << QDateTime::currentDateTime();
 	lines[hostname].series->append(QDateTime::currentMSecsSinceEpoch(), value);
 
 	for( const QString &host : lines.keys() )
@@ -123,18 +195,11 @@ void QBasicChart::setTimes(const QDateTime &firstTime, const QDateTime &lastTime
 	}
 }
 
-void QBasicChartWidget::showContextMenu(const QPoint &pos)
+QBasicChartWidget::QBasicChartWidget(QTabChartHolder *graphHolder)
+	: _qChartWidget(mChart = new QBasicChart)
+	, mGraphHolder(graphHolder)
 {
-	QMenu contextMenu( tr("Graph context menu"), this);
-
-	for( QAction *action : mGraphHolder->contextMenuActionList() )
-		contextMenu.addAction(action);
-
-	QAction editGraph( tr("Editar gráfico"), this);
-	connect( &editGraph, &QAction::triggered, this, &QBasicChartWidget::editGraph );
-	contextMenu.addAction( &editGraph );
-
-	contextMenu.exec(mapToGlobal(pos));
+	setContextMenuPolicy(Qt::CustomContextMenu);
 }
 
 WorkerThread *QBasicChartWidget::getFreeThread()
@@ -165,4 +230,15 @@ void QBasicChartWidget::addHost(const QString &hostname, const QColor &clr)
 {
 	chart()->addLine(hostname, clr);
 	mGraphicLineConfigList.append(BasicGraphLineConfig(hostname, clr));
+}
+
+void QBasicChartWidget::delHost(const BasicGraphLineConfig &bglc)
+{
+	chart()->delLine(bglc);
+	mGraphicLineConfigList.removeOne(bglc);
+}
+
+void QBasicChartWidget::on_ResultReady(WorkerThread *wt)
+{
+	addValue( wt->hostname(), wt->resultData().toUInt() );
 }

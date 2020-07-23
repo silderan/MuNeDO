@@ -37,6 +37,8 @@
 
 class QTabChartHolder : public QWidget
 {
+Q_OBJECT
+
 	QGridLayout *gridLayout_2;
 	QVBoxLayout *verticalLayout;
 	QScrollArea *scrollArea;
@@ -44,7 +46,6 @@ class QTabChartHolder : public QWidget
 	QSlider *horizontalSlider;
 	QList<QBasicChartWidget*> mChartList;
 	QToolButton *playButton;
-	QLabel *mBackgroundLabel;
 
 	ProjectManager mProjectManager;
 	QAction *mAddGraphAction;
@@ -53,26 +54,18 @@ class QTabChartHolder : public QWidget
 	QDateTime mLeftTime;
 	QDateTime mRightTime;
 
-	void addBackgroudLabel();
-	void removeBackgroudLabel();
-
-	void showContextMenu(const QPoint &pos);
-
 	void leftLimitChanged(int newVal);
 
 public:
 	QTabChartHolder(QWidget *papi = nullptr);
 
-	QList<QAction*> contextMenuActionList()	{ return QList<QAction*>() << mAddGraphAction;	}
-
-
 	ProjectManager::ProjectManager_ErrorCode loadProject(const QString &projectFolder);
-	void addGraphView();
 	QString projectName() const			{ return mProjectManager.projectName();			}
 	QString projectFolder() const		{ return mProjectManager.projectFolder();		}
 	QString projectDescription() const	{ return mProjectManager.projectDescription();	}
 
-	void addGraphRequest();
+
+	void addChart(QBasicChartWidget *chartWidget);
 	void play();
 	void heartbeat();
 };

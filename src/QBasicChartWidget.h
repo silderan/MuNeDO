@@ -85,13 +85,30 @@ struct BasicGraphLineConfig
 		: mRemoteHost(remoteHost)
 		, mLineColor(clr)
 	{	}
+	bool operator==(const BasicGraphLineConfig &other)
+	{
+		return (mRemoteHost == other.mRemoteHost) && (mLineColor == other.mLineColor);
+	}
 };
-using QBasicGraphLineConfigList = QList<BasicGraphLineConfig>;
+class QBasicGraphLineConfigList : public QList<BasicGraphLineConfig>
+{
+public:
+	bool contains(const QString &hostname) const
+	{
+		for( const BasicGraphLineConfig &bghl : *this )
+			if( hostname == bghl.mRemoteHost )
+				return true;
+		return false;
+	}
+	void append(const BasicGraphLineConfig &t)
+	{
+		if( !contains(t.mRemoteHost) )
+			QList::append(t);
+	}
+};
 
 class QBasicChart : public _qCharts
 {
-	Q_OBJECT
-
 	struct _line
 	{
 		_qLineSeries *series;
@@ -126,6 +143,13 @@ class QBasicChart : public _qCharts
 	QDateTime mInitialTime;	// Initial Time for x axis.
 	QDateTime leftLimit;	// Right limit for x axis.
 	QDateTime rightLimit;	// Right limit for x axis.
+
+protected:
+	void updateChartMaxAxis();
+	void setValueRange(const qreal &min, const qreal &max);
+	void setTimeRange(const qreal &minMSec, const qreal &maxMSec);
+	void setTimeRange(const QDateTime &minTime, const QDateTime &maxTime);
+
 public:
 	explicit QBasicChart(QGraphicsItem *parent = Q_NULLPTR, Qt::WindowFlags wFlags = Qt::Widget);
 	_line &addLine(const QString &hostname, const QColor &clr);
@@ -133,6 +157,7 @@ public:
 	{
 		return addLine(bglc.mRemoteHost, bglc.mLineColor);
 	}
+	void delLine(const BasicGraphLineConfig &bglc);
 
 	void addValue(const QString &hostname, unsigned long value);
 	QBasicGraphLineConfigList basicGraphLineConfigList();
@@ -149,37 +174,33 @@ class QTabChartHolder;
 class QBasicChartWidget : public _qChartWidget
 {
 	QBasicChart *mChart;
-
-protected:
 	QList<WorkerThread*> mAllThreads;
-	QBasicChart *chart()				{ return mChart;	}
-	const QBasicChart *chart() const	{ return mChart;	}
 	QTabChartHolder *mGraphHolder;
 	QBasicGraphLineConfigList mGraphicLineConfigList;
 
 	WorkerThread *getFreeThread();
-	void showContextMenu(const QPoint &pos);
+
+	QBasicChart *chart()				{ return mChart;	}
+	const QBasicChart *chart() const	{ return mChart;	}
 
 public:
-	QBasicChartWidget(QTabChartHolder *graphHolder)
-		: _qChartWidget(mChart = new QBasicChart)
-		, mGraphHolder(graphHolder)
-	{
-		setContextMenuPolicy(Qt::CustomContextMenu);
-
-		connect(this, &QBasicChartWidget::customContextMenuRequested, this, &QBasicChartWidget::showContextMenu);
-	}
+	QBasicChartWidget(QTabChartHolder *graphHolder);
 	void heartbeat();
-	virtual void editGraph() = 0;
+	virtual void editChart() = 0;
+	QBasicGraphLineConfigList basicGraphLineConfigList()	{ return chart()->basicGraphLineConfigList();	}
 
 	void addHost(const QString &hostname, const QColor &clr);
-	void setInitialTime(const QDateTime &initialTime)	{ mChart->setInitialTime(initialTime);	}
+	void addHost(const BasicGraphLineConfig &bglc)				{ addHost(bglc.mRemoteHost, bglc.mLineColor);	}
+	void delHost(const BasicGraphLineConfig &bglc);
+	void setInitialTime(const QDateTime &initialTime)			{ mChart->setInitialTime(initialTime);	}
 	// Set times to be shown in graph.
 	// If firstTime is invalid, it defaults to initialTime
 	// If lastTime is invalid, it defaults to currentTime.
 	void setTimes(const QDateTime &firstTime, const QDateTime &lastTime)	{ mChart->setTimes(firstTime, lastTime);	}
 
+
+	virtual void addValue(const QString &hostname, unsigned long value)	{ return chart()->addValue(hostname, value);}
+	virtual void on_ResultReady(WorkerThread *wt);
 	virtual void on_DoJob(WorkerThread *wt) = 0;
-	virtual void on_ResultReady(WorkerThread *wt) = 0;
 };
 #endif // QBASICCHARTWIDGET_H

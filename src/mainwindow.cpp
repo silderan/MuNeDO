@@ -27,13 +27,15 @@
 #include "Dialogs/DlgNewTab.h"
 #include "projectmanager.h"
 
+#include <QDebug>
+
 MainWindow::MainWindow(QWidget *parent)
 	: QMainWindow(parent)
 	, heartTimer(this)
 	, ui(new Ui::MainWindow)
 {
 	ui->setupUi(this);
-	connect( &heartTimer, SIGNAL(timeout()), this, SLOT(heartbeat()) );
+	connect( &heartTimer, &QTimer::timeout, this, &MainWindow::heartbeat );
 	heartTimer.start(1000);
 }
 
@@ -71,10 +73,16 @@ void MainWindow::on_delTabAction_triggered()
 
 void MainWindow::on_addGraphAction_triggered()
 {
-	if( QTabChartHolder*tab = static_cast<QTabChartHolder*>(ui->tabWidget->currentWidget()) )
+	if( QTabChartHolder *tab = static_cast<QTabChartHolder*>(ui->tabWidget->currentWidget()) )
 	{
-		tab->addGraphView();
+		QPingChartWidget *newPingChart = new QPingChartWidget(tab);
+		newPingChart->setObjectName(QString::fromUtf8("PingGraph"));
+		tab->addChart(newPingChart);
+		connect(newPingChart, &QBasicChartWidget::customContextMenuRequested, this, &MainWindow::on_contextMenuRequested);
+		newPingChart->editChart();
 	}
+	else
+		qDebug() << "currentTabWidget() is not a QTabChartHolder instance";
 }
 
 void MainWindow::on_delGraphAction_triggered()
@@ -98,4 +106,24 @@ QStringList MainWindow::openedProjectFolders() const
 void MainWindow::on_tabWidget_tabBarDoubleClicked(int index)
 {
 	ui->tabWidget->removeTab(index);
+}
+
+void MainWindow::on_contextMenuRequested(const QPoint &chartWidgetPoint)
+{
+	if( QBasicChartWidget *chartWidget = static_cast<QBasicChartWidget*>(sender()) )
+	{
+		QMenu contextMenu( tr("Graph context menu"), this);
+		QAction editGraph( tr("Editar gráfico"), this);
+		connect( &editGraph, &QAction::triggered, this, [&]() {this->showEditDialog(chartWidget);} );
+		contextMenu.addAction( &editGraph );
+
+		contextMenu.exec(chartWidget->mapToGlobal(chartWidgetPoint));
+	}
+	else
+		qDebug() << "sender() is not a QBasicChartWidget instance";
+}
+
+void MainWindow::showEditDialog(QBasicChartWidget *chartWidget)
+{
+	chartWidget->editChart();
 }

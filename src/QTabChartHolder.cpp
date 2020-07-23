@@ -32,43 +32,10 @@ QTabChartHolder::QTabChartHolder(QWidget *papi)
 	, scrollAreaWidgetContents(Q_NULLPTR)
 	, horizontalSlider(Q_NULLPTR)
 	, playButton(Q_NULLPTR)
-	, mBackgroundLabel(Q_NULLPTR)
 	, mProjectManager("")
 	, mAddGraphAction( new QAction( tr("Añadir Gráfica"), this) )
 	, mPlaying(false)
 {
-	setContextMenuPolicy(Qt::CustomContextMenu);
-
-	connect( this, &QTabChartHolder::customContextMenuRequested, this, &QTabChartHolder::showContextMenu);
-	connect( mAddGraphAction, &QAction::triggered, this, &QTabChartHolder::addGraphRequest );
-}
-
-void QTabChartHolder::addBackgroudLabel()
-{
-	Q_ASSERT(mChartList.isEmpty());
-	mBackgroundLabel = new QLabel( tr("\tClick derecho para abrir menú y añadir gráficos") );
-	verticalLayout->addWidget(mBackgroundLabel);
-}
-
-void QTabChartHolder::removeBackgroudLabel()
-{
-	mBackgroundLabel->deleteLater();
-	mBackgroundLabel = Q_NULLPTR;
-}
-
-void QTabChartHolder::showContextMenu(const QPoint &pos)
-{
-	QMenu contextMenu( tr("Basic context menu"), this);
-
-	for( QAction *action : contextMenuActionList() )
-		contextMenu.addAction(action);
-
-	contextMenu.exec(mapToGlobal(pos));
-}
-
-void QTabChartHolder::leftLimitChanged(int newVal)
-{
-
 }
 
 ProjectManager::ProjectManager_ErrorCode QTabChartHolder::loadProject(const QString &projectFolder)
@@ -108,32 +75,20 @@ ProjectManager::ProjectManager_ErrorCode QTabChartHolder::loadProject(const QStr
 		connect( playButton, &QToolButton::clicked, this, &QTabChartHolder::play );
 
 		gridLayout_2->addWidget(playButton, 1, 1, 1, 1);
-		addBackgroudLabel();
 	}
 	return err;
 }
 
-// TODO: Esta función debe cambiar mucho porque debe decidir/recibir el tipo de gráfico a crear.
-void QTabChartHolder::addGraphView()
+void QTabChartHolder::addChart(QBasicChartWidget *chartWidget)
 {
-	removeBackgroudLabel();
-	QPingChartWidget *newGraph = new QPingChartWidget(this);
-	newGraph->setObjectName(QString::fromUtf8("Graph"));
+	chartWidget->setContextMenuPolicy(Qt::CustomContextMenu);
 
-	newGraph->setMinimumHeight(200);
-	verticalLayout->addWidget(newGraph);
-	mChartList.append(newGraph);
+	chartWidget->setMinimumHeight(200);
+	verticalLayout->addWidget(chartWidget);
+	mChartList.append(chartWidget);
 
-	newGraph->editGraph();
-	newGraph->setInitialTime(mInitialTime);
-	newGraph->setTimes(mLeftTime, mRightTime);
-}
-
-// Called when a new graph wants to be added in holder.
-// Usually, through context menu.
-void QTabChartHolder::addGraphRequest()
-{
-	addGraphView();
+	chartWidget->setInitialTime(mInitialTime);
+	chartWidget->setTimes(mLeftTime, mRightTime);
 }
 
 void QTabChartHolder::play()
@@ -151,6 +106,10 @@ void QTabChartHolder::play()
 	}
 	else
 		mPlaying = false;
+}
+void QTabChartHolder::leftLimitChanged(int newVal)
+{
+
 }
 
 void QTabChartHolder::heartbeat()

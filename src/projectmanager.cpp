@@ -25,7 +25,7 @@
 #include <QObject>
 #include <QDir>
 
-#include "QIniFile.h"
+#include "Basic/QIniFile.h"
 
 ProjectManager::ProjectManager(const QString &folder)
 	: mProjectName(folder)
