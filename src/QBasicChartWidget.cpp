@@ -152,7 +152,7 @@ void QBasicChart::addValue(const QString &hostname, unsigned long value)
 		return;
 	}
 
-	qDebug() << "Adding in " << hostname << ": " << value << " at " << QDateTime::currentDateTime();
+//	qDebug() << "Adding in " << hostname << ": " << value << " at " << QDateTime::currentDateTime();
 	lines[hostname].series->append(QDateTime::currentMSecsSinceEpoch(), value);
 
 	for( const QString &host : lines.keys() )
@@ -195,9 +195,9 @@ void QBasicChart::setTimes(const QDateTime &firstTime, const QDateTime &lastTime
 	}
 }
 
-QBasicChartWidget::QBasicChartWidget(QTabChartHolder *graphHolder)
+QBasicChartWidget::QBasicChartWidget(QTabChartHolder *chartHolder)
 	: _qChartWidget(mChart = new QBasicChart)
-	, mGraphHolder(graphHolder)
+	, mChartHolder(chartHolder)
 {
 	setContextMenuPolicy(Qt::CustomContextMenu);
 }
@@ -214,6 +214,11 @@ WorkerThread *QBasicChartWidget::getFreeThread()
 	connect(workerThread, &WorkerThread::resultReady, this, &QBasicChartWidget::on_ResultReady);
 
 	return workerThread;
+}
+
+void QBasicChartWidget::mouseDoubleClickEvent(QMouseEvent *event)
+{
+	emit dobleClic(this);
 }
 
 void QBasicChartWidget::heartbeat()

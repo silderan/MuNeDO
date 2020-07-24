@@ -30,22 +30,6 @@
 #include "Dialogs/DlgEditPingGraph.h"
 
 
-void QPingChartWidget::editChart()
-{
-	QBasicGraphLineConfigList newList = basicGraphLineConfigList();
-	DlgEditPingGraph dlg(newList , this);
-	if( dlg.exec() )
-	{
-		QBasicGraphLineConfigList oldList = basicGraphLineConfigList();
-		for( BasicGraphLineConfig &oldHost : oldList )
-			if( !newList.contains(oldHost.mRemoteHost) )
-				delHost(oldHost);
-
-		for( BasicGraphLineConfig &host : newList  )
-			addHost(host);
-	}
-}
-
 void QPingChartWidget::on_DoJob(WorkerThread *wt)
 {
 	wt->setResultData( QVariant().fromValue(pingDelay(wt->hostname())) );

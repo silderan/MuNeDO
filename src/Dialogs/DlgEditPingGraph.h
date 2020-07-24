@@ -35,20 +35,25 @@ class QToolButton;
 
 class DlgEditPingGraph : public QDialog
 {
-	Q_OBJECT
+Q_OBJECT
 
 	Ui::DlgEditPingGraph *ui;
 	QBasicGraphLineConfigList &mGraphLineConfigList;
 
+	bool mRemoveChart;
+
 	void setButtonColor(QToolButton *btn, const QColor &clr);
 	QColor getButtonColor(QToolButton *btn);
+	void chooseColor();
 
 public:
 	explicit DlgEditPingGraph(QBasicGraphLineConfigList &graphLineConfigList, QWidget *parent);
 	~DlgEditPingGraph();
+	bool removeChart() const	{ return mRemoveChart;	}
 
 private slots:
 	void on_acceptButton_clicked();
+	void on_removeChartButton_clicked();
 };
 
 #endif // DLGEDITPINGGRAPH_H

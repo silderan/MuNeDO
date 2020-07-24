@@ -78,8 +78,7 @@ void MainWindow::on_addGraphAction_triggered()
 		QPingChartWidget *newPingChart = new QPingChartWidget(tab);
 		newPingChart->setObjectName(QString::fromUtf8("PingGraph"));
 		tab->addChart(newPingChart);
-		connect(newPingChart, &QBasicChartWidget::customContextMenuRequested, this, &MainWindow::on_contextMenuRequested);
-		newPingChart->editChart();
+		tab->editChart(newPingChart);
 	}
 	else
 		qDebug() << "currentTabWidget() is not a QTabChartHolder instance";
@@ -108,22 +107,22 @@ void MainWindow::on_tabWidget_tabBarDoubleClicked(int index)
 	ui->tabWidget->removeTab(index);
 }
 
-void MainWindow::on_contextMenuRequested(const QPoint &chartWidgetPoint)
-{
-	if( QBasicChartWidget *chartWidget = static_cast<QBasicChartWidget*>(sender()) )
-	{
-		QMenu contextMenu( tr("Graph context menu"), this);
-		QAction editGraph( tr("Editar gráfico"), this);
-		connect( &editGraph, &QAction::triggered, this, [&]() {this->showEditDialog(chartWidget);} );
-		contextMenu.addAction( &editGraph );
+//void MainWindow::on_contextMenuRequested(const QPoint &chartWidgetPoint)
+//{
+//	if( QBasicChartWidget *chartWidget = static_cast<QBasicChartWidget*>(sender()) )
+//	{
+//		QMenu contextMenu( tr("Graph context menu"), this);
+//		QAction editGraph( tr("Editar gráfico"), this);
+//		connect( &editGraph, &QAction::triggered, this, [&]() {this->edit(chartWidget);} );
+//		contextMenu.addAction( &editGraph );
 
-		contextMenu.exec(chartWidget->mapToGlobal(chartWidgetPoint));
-	}
-	else
-		qDebug() << "sender() is not a QBasicChartWidget instance";
-}
+//		contextMenu.exec(chartWidget->mapToGlobal(chartWidgetPoint));
+//	}
+//	else
+//		qDebug() << "sender() is not a QBasicChartWidget instance";
+//}
 
-void MainWindow::showEditDialog(QBasicChartWidget *chartWidget)
-{
-	chartWidget->editChart();
-}
+//void MainWindow::showEditDialog(QBasicChartWidget *chartWidget)
+//{
+//	chartWidget->editChart();
+//}

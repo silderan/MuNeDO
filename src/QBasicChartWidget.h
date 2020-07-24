@@ -173,9 +173,11 @@ class QTabChartHolder;
 
 class QBasicChartWidget : public _qChartWidget
 {
+Q_OBJECT
+
 	QBasicChart *mChart;
 	QList<WorkerThread*> mAllThreads;
-	QTabChartHolder *mGraphHolder;
+	QTabChartHolder *mChartHolder;
 	QBasicGraphLineConfigList mGraphicLineConfigList;
 
 	WorkerThread *getFreeThread();
@@ -183,11 +185,15 @@ class QBasicChartWidget : public _qChartWidget
 	QBasicChart *chart()				{ return mChart;	}
 	const QBasicChart *chart() const	{ return mChart;	}
 
+protected:
+	virtual void mouseDoubleClickEvent(QMouseEvent *event);
+
 public:
-	QBasicChartWidget(QTabChartHolder *graphHolder);
-	void heartbeat();
-	virtual void editChart() = 0;
+	QBasicChartWidget(QTabChartHolder *chartHolder);
+
 	QBasicGraphLineConfigList basicGraphLineConfigList()	{ return chart()->basicGraphLineConfigList();	}
+	QTabChartHolder *chartHolder()				{ return mChartHolder;	}
+	const QTabChartHolder *chartHolder() const	{ return mChartHolder;	}
 
 	void addHost(const QString &hostname, const QColor &clr);
 	void addHost(const BasicGraphLineConfig &bglc)				{ addHost(bglc.mRemoteHost, bglc.mLineColor);	}
@@ -198,9 +204,14 @@ public:
 	// If lastTime is invalid, it defaults to currentTime.
 	void setTimes(const QDateTime &firstTime, const QDateTime &lastTime)	{ mChart->setTimes(firstTime, lastTime);	}
 
-
 	virtual void addValue(const QString &hostname, unsigned long value)	{ return chart()->addValue(hostname, value);}
 	virtual void on_ResultReady(WorkerThread *wt);
 	virtual void on_DoJob(WorkerThread *wt) = 0;
+
+	void heartbeat();
+
+signals:
+	void dobleClic(QBasicChartWidget *chartWidget);
+	void rightClic(QBasicChartWidget *chartWidget);
 };
 #endif // QBASICCHARTWIDGET_H

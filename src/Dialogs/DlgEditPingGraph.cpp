@@ -22,10 +22,13 @@
 #include "DlgEditPingGraph.h"
 #include "ui_DlgEditPingGraph.h"
 
+#include <QColorDialog>
+
 DlgEditPingGraph::DlgEditPingGraph(QBasicGraphLineConfigList &graphLineConfigList, QWidget *parent)
 	: QDialog(parent)
 	, ui(new Ui::DlgEditPingGraph)
 	, mGraphLineConfigList(graphLineConfigList)
+	, mRemoveChart(false)
 {
 	ui->setupUi(this);
 	setButtonColor(ui->host1Button, mGraphLineConfigList.count() > 0 ? mGraphLineConfigList.at(0).mLineColor : Qt::red);
@@ -49,25 +52,38 @@ DlgEditPingGraph::DlgEditPingGraph(QBasicGraphLineConfigList &graphLineConfigLis
 	if( mGraphLineConfigList.count() > 7 ) ui->host8LineEdit->setText( mGraphLineConfigList.at(7).mRemoteHost );
 	if( mGraphLineConfigList.count() > 8 ) ui->host9LineEdit->setText( mGraphLineConfigList.at(8).mRemoteHost );
 	if( mGraphLineConfigList.count() > 9 ) ui->host10LineEdit->setText(mGraphLineConfigList.at(9).mRemoteHost );
+
+	connect( ui->host1Button, &QToolButton::clicked, this, &DlgEditPingGraph::chooseColor );
+	connect( ui->host2Button, &QToolButton::clicked, this, &DlgEditPingGraph::chooseColor );
+	connect( ui->host3Button, &QToolButton::clicked, this, &DlgEditPingGraph::chooseColor );
+	connect( ui->host4Button, &QToolButton::clicked, this, &DlgEditPingGraph::chooseColor );
+	connect( ui->host5Button, &QToolButton::clicked, this, &DlgEditPingGraph::chooseColor );
+	connect( ui->host6Button, &QToolButton::clicked, this, &DlgEditPingGraph::chooseColor );
+	connect( ui->host7Button, &QToolButton::clicked, this, &DlgEditPingGraph::chooseColor );
+	connect( ui->host8Button, &QToolButton::clicked, this, &DlgEditPingGraph::chooseColor );
+	connect( ui->host9Button, &QToolButton::clicked, this, &DlgEditPingGraph::chooseColor );
+	connect( ui->host10Button,&QToolButton::clicked, this, &DlgEditPingGraph::chooseColor );
 }
 
 
-void DlgEditPingGraph::setButtonColor(QToolButton *btn, const QColor &clr)
+void DlgEditPingGraph::setButtonColor(QToolButton *button, const QColor &clr)
 {
-	//Create a solid brush of the desired color
-	QBrush brush(clr);
-	//Get a copy of the current palette to modify
-	QPalette pal = btn->palette();
-	//Set all of the color roles but Disabled to our desired color
-	pal.setBrush(QPalette::Normal, QPalette::Button, brush);
-	pal.setBrush(QPalette::Inactive, QPalette::Button, brush);
-	//And finally set the new palette
-	btn->setPalette(pal);
+	QPalette pal = button->palette();
+	pal.setColor(QPalette::Button, clr);
+	button->setAutoFillBackground(true);
+	button->setPalette(pal);
+	button->setProperty("Color", clr);
 }
 
 QColor DlgEditPingGraph::getButtonColor(QToolButton *btn)
 {
-	return btn->palette().brush(QPalette::Normal, QPalette::Button).color();
+	return btn->property("Color").value<QColor>();
+}
+
+void DlgEditPingGraph::chooseColor()
+{
+	QToolButton *btn = static_cast<QToolButton*>(sender());
+	setButtonColor(btn, QColorDialog::getColor(getButtonColor(btn), this, tr("Color de la linea")));
 }
 
 DlgEditPingGraph::~DlgEditPingGraph()
@@ -88,5 +104,11 @@ void DlgEditPingGraph::on_acceptButton_clicked()
 	if( !ui->host8LineEdit->text().isEmpty() ) mGraphLineConfigList.append(BasicGraphLineConfig(ui->host8LineEdit->text(), getButtonColor(ui->host8Button)) );
 	if( !ui->host9LineEdit->text().isEmpty() ) mGraphLineConfigList.append(BasicGraphLineConfig(ui->host9LineEdit->text(), getButtonColor(ui->host9Button)) );
 	if( !ui->host10LineEdit->text().isEmpty()) mGraphLineConfigList.append(BasicGraphLineConfig(ui->host10LineEdit->text(),getButtonColor(ui->host10Button)) );
+	accept();
+}
+
+void DlgEditPingGraph::on_removeChartButton_clicked()
+{
+	mRemoveChart = true;
 	accept();
 }

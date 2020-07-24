@@ -31,7 +31,6 @@ public:
 	QPingChartWidget(QTabChartHolder *graphHolder)
 		: QBasicChartWidget(graphHolder)
 	{	}
-	virtual void editChart() override;
 	virtual void on_DoJob(WorkerThread *wt) override;
 };
 

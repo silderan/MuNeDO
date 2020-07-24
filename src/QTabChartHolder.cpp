@@ -24,6 +24,8 @@
 
 #include <QMenu>
 
+#include "Dialogs/DlgEditPingGraph.h"
+
 QTabChartHolder::QTabChartHolder(QWidget *papi)
 	: QWidget(papi)
 	, gridLayout_2(Q_NULLPTR)
@@ -79,16 +81,40 @@ ProjectManager::ProjectManager_ErrorCode QTabChartHolder::loadProject(const QStr
 	return err;
 }
 
+void QTabChartHolder::editChart(QBasicChartWidget *chartWidget)
+{
+	QBasicGraphLineConfigList newList = chartWidget->basicGraphLineConfigList();
+	DlgEditPingGraph dlg(newList , this);
+	if( dlg.exec() )
+	{
+		if( dlg.removeChart() )
+			return removeChart(chartWidget);
+
+		QBasicGraphLineConfigList oldList = chartWidget->basicGraphLineConfigList();
+		for( BasicGraphLineConfig &oldHost : oldList )
+			if( !newList.contains(oldHost.mRemoteHost) )
+				chartWidget->delHost(oldHost);
+
+		for( BasicGraphLineConfig &host : newList  )
+			chartWidget->addHost(host);
+	}
+}
+
 void QTabChartHolder::addChart(QBasicChartWidget *chartWidget)
 {
-	chartWidget->setContextMenuPolicy(Qt::CustomContextMenu);
-
 	chartWidget->setMinimumHeight(200);
 	verticalLayout->addWidget(chartWidget);
 	mChartList.append(chartWidget);
 
 	chartWidget->setInitialTime(mInitialTime);
 	chartWidget->setTimes(mLeftTime, mRightTime);
+	connect( chartWidget, &QBasicChartWidget::dobleClic, this, &QTabChartHolder::editChart );
+}
+
+void QTabChartHolder::removeChart(QBasicChartWidget *chartWidget)
+{
+	mChartList.removeOne(chartWidget);
+	chartWidget->deleteLater();
 }
 
 void QTabChartHolder::play()
@@ -97,10 +123,8 @@ void QTabChartHolder::play()
 	{
 		mPlaying = true;
 		if( !mInitialTime.isValid() )
-		{
 			mLeftTime = mInitialTime = QDateTime::currentDateTime();
-			mRightTime = mInitialTime.addSecs(1);
-		}
+
 		for( QBasicChartWidget *graph : mChartList )
 			graph->setInitialTime(mInitialTime);
 	}

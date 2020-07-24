@@ -65,7 +65,9 @@ public:
 	QString projectDescription() const	{ return mProjectManager.projectDescription();	}
 
 
+	void editChart(QBasicChartWidget *chartWidget);
 	void addChart(QBasicChartWidget *chartWidget);
+	void removeChart(QBasicChartWidget *chartWidget);
 	void play();
 	void heartbeat();
 };
