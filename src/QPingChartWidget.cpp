@@ -27,7 +27,7 @@
 
 #include <QDebug>
 
-#include "Dialogs/DlgEditPingGraph.h"
+#include "Dialogs/DlgEditPingChart.h"
 
 
 void QPingChartWidget::on_DoJob(WorkerThread *wt)

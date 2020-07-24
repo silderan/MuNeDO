@@ -62,7 +62,7 @@ ProjectManager::ProjectManager_ErrorCode ProjectManager::createNewProject()
 		mLastErrorArg = mProjectFolder;
 		return ProjectManager_ErrorCode::NoError;
 	}
-	return saveProject(QList<QBasicGraphLineConfigList>());
+	return saveProject(QList<QBasicChartLineConfigList>());
 }
 
 ProjectManager::ProjectManager_ErrorCode ProjectManager::loadProject(const QString &folder)
@@ -84,7 +84,7 @@ ProjectManager::ProjectManager_ErrorCode ProjectManager::loadProject()
 	return ProjectManager_ErrorCode::NoError;
 }
 
-ProjectManager::ProjectManager_ErrorCode ProjectManager::saveProject(const QList<QBasicGraphLineConfigList>  &chartLineList) const
+ProjectManager::ProjectManager_ErrorCode ProjectManager::saveProject(const QList<QBasicChartLineConfigList>  &chartLineList) const
 {
 	Q_ASSERT( !mProjectFolder.isEmpty() );
 	Q_ASSERT( !mProjectDesc.isEmpty() );
@@ -114,7 +114,7 @@ ProjectManager::ProjectManager_ErrorCode ProjectManager::deleteProject()
 	return ProjectManager::ProjectManager_ErrorCode::NoError;
 }
 
-ProjectManager::ProjectManager_ErrorCode ProjectManager::saveProjectChart(int chartID, const QBasicGraphLineConfigList &chartLines) const
+ProjectManager::ProjectManager_ErrorCode ProjectManager::saveProjectChart(int chartID, const QBasicChartLineConfigList &chartLines) const
 {
 	Q_ASSERT( !mProjectFolder.isEmpty() );
 
@@ -124,7 +124,7 @@ ProjectManager::ProjectManager_ErrorCode ProjectManager::saveProjectChart(int ch
 
 	int i = 0;
 	QIniData data;
-	for( const BasicGraphLineConfig &lineConfig : chartLines )
+	for( const BasicChartLineConfig &lineConfig : chartLines )
 	{
 		data[QString("line_%1_name").arg(i)] = lineConfig.mRemoteHost;
 		data[QString("line_%1_color").arg(i)] = QString("%1:%2:%3").arg(lineConfig.mLineColor.red()).arg(lineConfig.mLineColor.green()).arg(lineConfig.mLineColor.blue());
@@ -135,7 +135,7 @@ ProjectManager::ProjectManager_ErrorCode ProjectManager::saveProjectChart(int ch
 	return ProjectManager_ErrorCode::NoError;
 }
 
-ProjectManager::ProjectManager_ErrorCode ProjectManager::loadProjectChart(int chartID, QBasicGraphLineConfigList &chartLines) const
+ProjectManager::ProjectManager_ErrorCode ProjectManager::loadProjectChart(int chartID, QBasicChartLineConfigList &chartLines) const
 {
 	QIniData data;
 
@@ -147,7 +147,7 @@ ProjectManager::ProjectManager_ErrorCode ProjectManager::loadProjectChart(int ch
 		QStringList colors = data[QString("line_%1_color").arg(i)].split(":");
 		QString name = data[QString("line_%1_name").arg(i)];
 		if( colors.count() == 3 )
-			chartLines.append(BasicGraphLineConfig(name, QColor(colors[0].toInt(),	// Red
+			chartLines.append(BasicChartLineConfig(name, QColor(colors[0].toInt(),	// Red
 																colors[1].toInt(),	// Green
 																colors[2].toInt()) ));// Blue
 		else
@@ -156,11 +156,11 @@ ProjectManager::ProjectManager_ErrorCode ProjectManager::loadProjectChart(int ch
 	return ProjectManager_ErrorCode::NoError;
 }
 
-ProjectManager::ProjectManager_ErrorCode ProjectManager::loadProjectCharts(QList<QBasicGraphLineConfigList> &chartLineList) const
+ProjectManager::ProjectManager_ErrorCode ProjectManager::loadProjectCharts(QList<QBasicChartLineConfigList> &chartLineList) const
 {
 	for( int chartID = 0; ; ++chartID )
 	{
-		QBasicGraphLineConfigList chartLines;
+		QBasicChartLineConfigList chartLines;
 		ProjectManager_ErrorCode err = loadProjectChart(chartID, chartLines);
 		if( err != ProjectManager_ErrorCode::NoError )
 			return err;

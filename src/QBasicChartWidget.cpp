@@ -53,8 +53,8 @@ QBasicChart::_line &QBasicChart::addLine(const QString &hostname, const QColor &
 	lines.insert(hostname, _line());
 	_line &line = lines[hostname];
 
-	line.mBasicGraphLineConfig.mRemoteHost = hostname;
-	line.mBasicGraphLineConfig.mLineColor = clr;
+	line.mBasicChartLineConfig.mRemoteHost = hostname;
+	line.mBasicChartLineConfig.mLineColor = clr;
 
 	addSeries(line.series);
 
@@ -80,7 +80,7 @@ QBasicChart::_line &QBasicChart::addLine(const QString &hostname, const QColor &
 	return line;
 }
 
-void QBasicChart::delLine(const BasicGraphLineConfig &bglc)
+void QBasicChart::delLine(const BasicChartLineConfig &bglc)
 {
 	_line line = lines[bglc.mRemoteHost];
 	removeAxis( line.axisX );
@@ -166,12 +166,12 @@ void QBasicChart::addValue(const QString &hostname, unsigned long value)
 	}
 }
 
-QBasicGraphLineConfigList QBasicChart::basicGraphLineConfigList() const
+QBasicChartLineConfigList QBasicChart::basicChartLineConfigList() const
 {
-	QBasicGraphLineConfigList rtn;
+	QBasicChartLineConfigList rtn;
 	foreach( const _line &l, lines )
 	{
-		rtn.append( BasicGraphLineConfig(l.mBasicGraphLineConfig.mRemoteHost, l.mBasicGraphLineConfig.mLineColor) );
+		rtn.append( BasicChartLineConfig(l.mBasicChartLineConfig.mRemoteHost, l.mBasicChartLineConfig.mLineColor) );
 	}
 	return rtn;
 }
@@ -222,7 +222,7 @@ void QBasicChartWidget::mouseDoubleClickEvent(QMouseEvent *event)
 
 void QBasicChartWidget::heartbeat()
 {
-	for( BasicGraphLineConfig &cnfg : mGraphicLineConfigList )
+	for( BasicChartLineConfig &cnfg : mChartLineConfigList )
 	{
 		WorkerThread *wt = getFreeThread();
 		wt->setHostname(cnfg.mRemoteHost);
@@ -233,13 +233,13 @@ void QBasicChartWidget::heartbeat()
 void QBasicChartWidget::addHost(const QString &hostname, const QColor &clr)
 {
 	chart()->addLine(hostname, clr);
-	mGraphicLineConfigList.append(BasicGraphLineConfig(hostname, clr));
+	mChartLineConfigList.append(BasicChartLineConfig(hostname, clr));
 }
 
-void QBasicChartWidget::delHost(const BasicGraphLineConfig &bglc)
+void QBasicChartWidget::delHost(const BasicChartLineConfig &bglc)
 {
 	chart()->delLine(bglc);
-	mGraphicLineConfigList.removeOne(bglc);
+	mChartLineConfigList.removeOne(bglc);
 }
 
 void QBasicChartWidget::on_ResultReady(WorkerThread *wt)

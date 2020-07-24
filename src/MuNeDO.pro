@@ -23,7 +23,7 @@ SOURCES += \
 	Basic/QIniFile.cpp \
 	Basic/Utils.cpp \
 	Basic/ping.cpp \
-	Dialogs/DlgEditPingGraph.cpp \
+	Dialogs/DlgEditPingChart.cpp \
 	Dialogs/DlgNewTab.cpp \
     QBasicChartWidget.cpp \
 	QPingChartWidget.cpp \
@@ -36,7 +36,7 @@ HEADERS += \
 	Basic/QIniFile.h \
 	Basic/Utils.h \
 	Basic/ping.h \
-	Dialogs/DlgEditPingGraph.h \
+	Dialogs/DlgEditPingChart.h \
 	Dialogs/DlgNewTab.h \
     QBasicChartWidget.h \
 	QPingChartWidget.h \
@@ -45,7 +45,7 @@ HEADERS += \
     projectmanager.h
 
 FORMS += \
-	Dialogs/DlgEditPingGraph.ui \
+	Dialogs/DlgEditPingChart.ui \
 	Dialogs/dlgnewtab.ui \
     mainwindow.ui
 

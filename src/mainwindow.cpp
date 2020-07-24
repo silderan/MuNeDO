@@ -52,7 +52,7 @@ void MainWindow::heartbeat()
 
 // Action del menú para añadir una nueva pestaña de proyecto.
 // Abre el diálogo para escoger un proyecto existente o crear uno nuevo.
-void MainWindow::on_addTabAction_triggered()
+void MainWindow::on_addProjectAction_triggered()
 {
 	QStringList openedFolders;
 	DlgNewTab dlg(openedProjectFolders(), this);
@@ -66,24 +66,13 @@ void MainWindow::on_addTabAction_triggered()
 	}
 }
 
-void MainWindow::on_delTabAction_triggered()
-{
-
-}
-
-void MainWindow::on_addGraphAction_triggered()
+void MainWindow::on_addChartAction_triggered()
 {
 	if( QTabChartHolder *tab = static_cast<QTabChartHolder*>(ui->tabWidget->currentWidget()) )
 		tab->editChart(tab->addPingChart(false));
 	else
 		qDebug() << "currentTabWidget() is not a QTabChartHolder instance";
 }
-
-void MainWindow::on_delGraphAction_triggered()
-{
-
-}
-
 QWidget *MainWindow::currentViewport()
 {
 	return Q_NULLPTR;
@@ -106,10 +95,10 @@ void MainWindow::on_tabWidget_tabBarDoubleClicked(int index)
 //{
 //	if( QBasicChartWidget *chartWidget = static_cast<QBasicChartWidget*>(sender()) )
 //	{
-//		QMenu contextMenu( tr("Graph context menu"), this);
-//		QAction editGraph( tr("Editar gráfico"), this);
-//		connect( &editGraph, &QAction::triggered, this, [&]() {this->edit(chartWidget);} );
-//		contextMenu.addAction( &editGraph );
+//		QMenu contextMenu( tr("Chart context menu"), this);
+//		QAction editChart( tr("Editar gráfico"), this);
+//		connect( &editChart, &QAction::triggered, this, [&]() {this->edit(chartWidget);} );
+//		contextMenu.addAction( &editChart );
 
 //		contextMenu.exec(chartWidget->mapToGlobal(chartWidgetPoint));
 //	}

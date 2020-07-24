@@ -19,8 +19,8 @@
   If not, see <http://www.gnu.org/licenses/>.
 
 **************************************************************************/
-#ifndef DLGEDITPINGGRAPH_H
-#define DLGEDITPINGGRAPH_H
+#ifndef DLGEDITPINGCHART_H
+#define DLGEDITPINGCHART_H
 
 #include <QDialog>
 
@@ -28,17 +28,17 @@
 
 namespace Ui
 {
-	class DlgEditPingGraph;
+	class DlgEditPingChart;
 }
 
 class QToolButton;
 
-class DlgEditPingGraph : public QDialog
+class DlgEditPingChart : public QDialog
 {
 Q_OBJECT
 
-	Ui::DlgEditPingGraph *ui;
-	QBasicGraphLineConfigList &mGraphLineConfigList;
+	Ui::DlgEditPingChart *ui;
+	QBasicChartLineConfigList &mChartLineConfigList;
 
 	bool mRemoveChart;
 
@@ -47,8 +47,8 @@ Q_OBJECT
 	void chooseColor();
 
 public:
-	explicit DlgEditPingGraph(QBasicGraphLineConfigList &graphLineConfigList, QWidget *parent);
-	~DlgEditPingGraph();
+	explicit DlgEditPingChart(QBasicChartLineConfigList &chartLineConfigList, QWidget *parent);
+	~DlgEditPingChart();
 	bool removeChart() const	{ return mRemoveChart;	}
 
 private slots:
@@ -56,4 +56,4 @@ private slots:
 	void on_removeChartButton_clicked();
 };
 
-#endif // DLGEDITPINGGRAPH_H
+#endif // DLGEDITPINGCHART_H

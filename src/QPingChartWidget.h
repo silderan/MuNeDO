@@ -28,8 +28,8 @@
 class QPingChartWidget : public QBasicChartWidget
 {
 public:
-	QPingChartWidget(QTabChartHolder *graphHolder)
-		: QBasicChartWidget(graphHolder)
+	QPingChartWidget(QTabChartHolder *chartHolder)
+		: QBasicChartWidget(chartHolder)
 	{	}
 	virtual void on_DoJob(WorkerThread *wt) override;
 };

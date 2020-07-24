@@ -44,13 +44,13 @@ public:
 
 private slots:
 	void heartbeat();
-	void on_addTabAction_triggered();
-	void on_delTabAction_triggered();
-	void on_addGraphAction_triggered();
-	void on_delGraphAction_triggered();
+	void on_addChartAction_triggered();
 	void on_tabWidget_tabBarDoubleClicked(int index);
 //	void on_contextMenuRequested(const QPoint &chartWidgetPoint);
 //	void showEditDialog(QBasicChartWidget *chartWidget);
+
+	void on_addProjectAction_triggered();
+
 
 private:
 	Ui::MainWindow *ui;

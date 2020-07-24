@@ -24,7 +24,7 @@
 
 #include <QMenu>
 
-#include "Dialogs/DlgEditPingGraph.h"
+#include "Dialogs/DlgEditPingChart.h"
 
 QTabChartHolder::QTabChartHolder(QWidget *papi)
 	: QWidget(papi)
@@ -35,7 +35,7 @@ QTabChartHolder::QTabChartHolder(QWidget *papi)
 	, horizontalSlider(Q_NULLPTR)
 	, playButton(Q_NULLPTR)
 	, mProjectManager("")
-	, mAddGraphAction( new QAction( tr("Añadir Gráfica"), this) )
+	, mAddChartAction( new QAction( tr("Añadir Gráfica"), this) )
 	, mPlaying(false)
 {
 }
@@ -46,7 +46,7 @@ ProjectManager::ProjectManager_ErrorCode QTabChartHolder::loadProject(const QStr
 
 	if( err == ProjectManager::ProjectManager_ErrorCode::NoError )
 	{
-		// ToDo: Remove all graph widgets.
+		// ToDo: Remove all widgets.
 
 		gridLayout_2 = new QGridLayout(this);
 		gridLayout_2->setSpacing(0);
@@ -77,12 +77,12 @@ ProjectManager::ProjectManager_ErrorCode QTabChartHolder::loadProject(const QStr
 		connect( playButton, &QToolButton::clicked, this, &QTabChartHolder::play );
 
 		gridLayout_2->addWidget(playButton, 1, 1, 1, 1);
-		QList<QBasicGraphLineConfigList> chartLinesList;
+		QList<QBasicChartLineConfigList> chartLinesList;
 		mProjectManager.loadProjectCharts(chartLinesList);
-		for( const QBasicGraphLineConfigList &chartLines : chartLinesList )
+		for( const QBasicChartLineConfigList &chartLines : chartLinesList )
 		{
 			QBasicChartWidget *chartWidget = addPingChart(false);
-			for( const BasicGraphLineConfig &chartLine : chartLines )
+			for( const BasicChartLineConfig &chartLine : chartLines )
 				chartWidget->addHost(chartLine);
 		}
 	}
@@ -91,20 +91,20 @@ ProjectManager::ProjectManager_ErrorCode QTabChartHolder::loadProject(const QStr
 
 void QTabChartHolder::editChart(QBasicChartWidget *chartWidget)
 {
-	QBasicGraphLineConfigList newList = chartWidget->basicGraphLineConfigList();
-	DlgEditPingGraph dlg(newList , this);
+	QBasicChartLineConfigList newList = chartWidget->basicChartLineConfigList();
+	DlgEditPingChart dlg(newList , this);
 	if( dlg.exec() )
 	{
 		if( dlg.removeChart() )
 			removeChart(chartWidget);
 		else
 		{
-			QBasicGraphLineConfigList oldList = chartWidget->basicGraphLineConfigList();
-			for( BasicGraphLineConfig &oldHost : oldList )
+			QBasicChartLineConfigList oldList = chartWidget->basicChartLineConfigList();
+			for( BasicChartLineConfig &oldHost : oldList )
 				if( !newList.contains(oldHost.mRemoteHost) )
 					chartWidget->delHost(oldHost);
 
-			for( BasicGraphLineConfig &host : newList  )
+			for( BasicChartLineConfig &host : newList  )
 				chartWidget->addHost(host);
 		}
 		saveCharts();
@@ -113,16 +113,16 @@ void QTabChartHolder::editChart(QBasicChartWidget *chartWidget)
 
 void QTabChartHolder::saveCharts() const
 {
-	QList<QBasicGraphLineConfigList> chartLineList;
+	QList<QBasicChartLineConfigList> chartLineList;
 	for( const QBasicChartWidget *chart : mChartList )
-		chartLineList.append(chart->basicGraphLineConfigList());
+		chartLineList.append(chart->basicChartLineConfigList());
 	mProjectManager.saveProject( chartLineList );
 }
 
 QPingChartWidget *QTabChartHolder::addPingChart(bool save)
 {
 	QPingChartWidget *chartWidget = new QPingChartWidget(this);
-	chartWidget->setObjectName(QString::fromUtf8("PingGraph"));
+	chartWidget->setObjectName(QString::fromUtf8("PingChart"));
 
 	chartWidget->setMinimumHeight(200);
 	verticalLayout->addWidget(chartWidget);
@@ -154,8 +154,8 @@ void QTabChartHolder::play()
 		if( !mInitialTime.isValid() )
 			mLeftTime = mInitialTime = QDateTime::currentDateTime();
 
-		for( QBasicChartWidget *graph : mChartList )
-			graph->setInitialTime(mInitialTime);
+		for( QBasicChartWidget *chart : mChartList )
+			chart->setInitialTime(mInitialTime);
 	}
 	else
 		mPlaying = false;
@@ -168,6 +168,6 @@ void QTabChartHolder::leftLimitChanged(int newVal)
 void QTabChartHolder::heartbeat()
 {
 	if( mPlaying )
-		for( QBasicChartWidget *graph : mChartList )
-			graph->heartbeat();
+		for( QBasicChartWidget *chart : mChartList )
+			chart->heartbeat();
 }

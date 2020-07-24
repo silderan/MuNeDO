@@ -20,8 +20,8 @@
 
 **************************************************************************/
 
-#ifndef QTABGRAPHHOLDER_H
-#define QTABGRAPHHOLDER_H
+#ifndef QTABCHARTHOLDER_H
+#define QTABCHARTHOLDER_H
 
 #include <QWidget>
 #include <QVBoxLayout>
@@ -48,7 +48,7 @@ Q_OBJECT
 	QToolButton *playButton;
 
 	ProjectManager mProjectManager;
-	QAction *mAddGraphAction;
+	QAction *mAddChartAction;
 	bool mPlaying;
 	QDateTime mInitialTime;
 	QDateTime mLeftTime;
@@ -73,4 +73,4 @@ public:
 	void heartbeat();
 };
 
-#endif // QTABGRAPHHOLDER_H
+#endif // QTABCHARTHOLDER_H

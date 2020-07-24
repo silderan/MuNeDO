@@ -72,35 +72,35 @@ using _qTimeAxis = QDateTimeAxis;
 #endif
 
 
-struct BasicGraphLineConfig
+struct BasicChartLineConfig
 {
 	QString mRemoteHost;
 	QColor mLineColor;
-	BasicGraphLineConfig(){}
-	BasicGraphLineConfig(const BasicGraphLineConfig &other)
+	BasicChartLineConfig(){}
+	BasicChartLineConfig(const BasicChartLineConfig &other)
 		: mRemoteHost(other.mRemoteHost)
 		, mLineColor(other.mLineColor)
 	{	}
-	BasicGraphLineConfig(const QString &remoteHost, const QColor &clr)
+	BasicChartLineConfig(const QString &remoteHost, const QColor &clr)
 		: mRemoteHost(remoteHost)
 		, mLineColor(clr)
 	{	}
-	bool operator==(const BasicGraphLineConfig &other)
+	bool operator==(const BasicChartLineConfig &other)
 	{
 		return (mRemoteHost == other.mRemoteHost) && (mLineColor == other.mLineColor);
 	}
 };
-class QBasicGraphLineConfigList : public QList<BasicGraphLineConfig>
+class QBasicChartLineConfigList : public QList<BasicChartLineConfig>
 {
 public:
 	bool contains(const QString &hostname) const
 	{
-		for( const BasicGraphLineConfig &bghl : *this )
+		for( const BasicChartLineConfig &bghl : *this )
 			if( hostname == bghl.mRemoteHost )
 				return true;
 		return false;
 	}
-	void append(const BasicGraphLineConfig &t)
+	void append(const BasicChartLineConfig &t)
 	{
 		if( !contains(t.mRemoteHost) )
 			QList::append(t);
@@ -114,7 +114,7 @@ class QBasicChart : public _qCharts
 		_qLineSeries *series;
 		_qTimeAxis *axisX;
 		_qValueAxis *axisY;
-		BasicGraphLineConfig mBasicGraphLineConfig;
+		BasicChartLineConfig mBasicChartLineConfig;
 		_line()
 			: series(new _qLineSeries())
 			, axisX(new _qTimeAxis())
@@ -128,12 +128,12 @@ class QBasicChart : public _qCharts
 			: series(other.series)
 			, axisX(other.axisX)
 			, axisY(other.axisY)
-			, mBasicGraphLineConfig(other.mBasicGraphLineConfig)
+			, mBasicChartLineConfig(other.mBasicChartLineConfig)
 		{	}
 
 		void changeColor(const QColor &clr)
 		{
-			QPen p(mBasicGraphLineConfig.mLineColor = clr);
+			QPen p(mBasicChartLineConfig.mLineColor = clr);
 			p.setWidth(1);
 			series->setPen(p);
 		}
@@ -153,14 +153,14 @@ protected:
 public:
 	explicit QBasicChart(QGraphicsItem *parent = Q_NULLPTR, Qt::WindowFlags wFlags = Qt::Widget);
 	_line &addLine(const QString &hostname, const QColor &clr);
-	_line &addLine(const BasicGraphLineConfig &bglc)
+	_line &addLine(const BasicChartLineConfig &bglc)
 	{
 		return addLine(bglc.mRemoteHost, bglc.mLineColor);
 	}
-	void delLine(const BasicGraphLineConfig &bglc);
+	void delLine(const BasicChartLineConfig &bglc);
 
 	void addValue(const QString &hostname, unsigned long value);
-	QBasicGraphLineConfigList basicGraphLineConfigList() const;
+	QBasicChartLineConfigList basicChartLineConfigList() const;
 	void setInitialTime(const QDateTime &initialTime);
 
 	// Set times to be shown in graph.
@@ -178,7 +178,7 @@ Q_OBJECT
 	QBasicChart *mChart;
 	QList<WorkerThread*> mAllThreads;
 	QTabChartHolder *mChartHolder;
-	QBasicGraphLineConfigList mGraphicLineConfigList;
+	QBasicChartLineConfigList mChartLineConfigList;
 
 	WorkerThread *getFreeThread();
 
@@ -191,13 +191,13 @@ protected:
 public:
 	QBasicChartWidget(QTabChartHolder *chartHolder);
 
-	QBasicGraphLineConfigList basicGraphLineConfigList() const	{ return chart()->basicGraphLineConfigList();	}
+	QBasicChartLineConfigList basicChartLineConfigList() const	{ return chart()->basicChartLineConfigList();	}
 	QTabChartHolder *chartHolder()				{ return mChartHolder;	}
 	const QTabChartHolder *chartHolder() const	{ return mChartHolder;	}
 
 	void addHost(const QString &hostname, const QColor &clr);
-	void addHost(const BasicGraphLineConfig &bglc)				{ addHost(bglc.mRemoteHost, bglc.mLineColor);	}
-	void delHost(const BasicGraphLineConfig &bglc);
+	void addHost(const BasicChartLineConfig &bglc)				{ addHost(bglc.mRemoteHost, bglc.mLineColor);	}
+	void delHost(const BasicChartLineConfig &bglc);
 	void setInitialTime(const QDateTime &initialTime)			{ mChart->setInitialTime(initialTime);	}
 	// Set times to be shown in graph.
 	// If firstTime is invalid, it defaults to initialTime

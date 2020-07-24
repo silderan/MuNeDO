@@ -38,37 +38,22 @@
     <property name="title">
      <string>Proyectos</string>
     </property>
-    <addaction name="addTabAction"/>
-    <addaction name="delTabAction"/>
-   </widget>
-   <widget class="QMenu" name="menuGr_ficos">
-    <property name="title">
-     <string>Gráficos</string>
-    </property>
-    <addaction name="addGraphAction"/>
-    <addaction name="delGraphAction"/>
+    <addaction name="addProjectAction"/>
+    <addaction name="addChartAction"/>
    </widget>
    <addaction name="menuA_adir_Pesta_a"/>
-   <addaction name="menuGr_ficos"/>
   </widget>
-  <action name="addTabAction">
+  <action name="addProjectAction">
    <property name="text">
-    <string>Abrir</string>
+    <string>Abrir Proyecto</string>
+   </property>
+   <property name="toolTip">
+    <string>Abre un projecto nuevo o existente</string>
    </property>
   </action>
-  <action name="delTabAction">
-   <property name="text">
-    <string>Cerrar</string>
-   </property>
-  </action>
-  <action name="addGraphAction">
+  <action name="addChartAction">
    <property name="text">
     <string>Añadir Gráfico</string>
-   </property>
-  </action>
-  <action name="delGraphAction">
-   <property name="text">
-    <string>Borrar Grafico</string>
    </property>
   </action>
  </widget>
