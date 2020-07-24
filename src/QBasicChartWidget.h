@@ -160,7 +160,7 @@ public:
 	void delLine(const BasicGraphLineConfig &bglc);
 
 	void addValue(const QString &hostname, unsigned long value);
-	QBasicGraphLineConfigList basicGraphLineConfigList();
+	QBasicGraphLineConfigList basicGraphLineConfigList() const;
 	void setInitialTime(const QDateTime &initialTime);
 
 	// Set times to be shown in graph.
@@ -191,7 +191,7 @@ protected:
 public:
 	QBasicChartWidget(QTabChartHolder *chartHolder);
 
-	QBasicGraphLineConfigList basicGraphLineConfigList()	{ return chart()->basicGraphLineConfigList();	}
+	QBasicGraphLineConfigList basicGraphLineConfigList() const	{ return chart()->basicGraphLineConfigList();	}
 	QTabChartHolder *chartHolder()				{ return mChartHolder;	}
 	const QTabChartHolder *chartHolder() const	{ return mChartHolder;	}
 
@@ -202,7 +202,7 @@ public:
 	// Set times to be shown in graph.
 	// If firstTime is invalid, it defaults to initialTime
 	// If lastTime is invalid, it defaults to currentTime.
-	void setTimes(const QDateTime &firstTime, const QDateTime &lastTime)	{ mChart->setTimes(firstTime, lastTime);	}
+	void setTimeRange(const QDateTime &firstTime, const QDateTime &lastTime)	{ mChart->setTimes(firstTime, lastTime);	}
 
 	virtual void addValue(const QString &hostname, unsigned long value)	{ return chart()->addValue(hostname, value);}
 	virtual void on_ResultReady(WorkerThread *wt);

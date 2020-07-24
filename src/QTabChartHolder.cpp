@@ -77,6 +77,14 @@ ProjectManager::ProjectManager_ErrorCode QTabChartHolder::loadProject(const QStr
 		connect( playButton, &QToolButton::clicked, this, &QTabChartHolder::play );
 
 		gridLayout_2->addWidget(playButton, 1, 1, 1, 1);
+		QList<QBasicGraphLineConfigList> chartLinesList;
+		mProjectManager.loadProjectCharts(chartLinesList);
+		for( const QBasicGraphLineConfigList &chartLines : chartLinesList )
+		{
+			QBasicChartWidget *chartWidget = addPingChart(false);
+			for( const BasicGraphLineConfig &chartLine : chartLines )
+				chartWidget->addHost(chartLine);
+		}
 	}
 	return err;
 }
@@ -88,33 +96,54 @@ void QTabChartHolder::editChart(QBasicChartWidget *chartWidget)
 	if( dlg.exec() )
 	{
 		if( dlg.removeChart() )
-			return removeChart(chartWidget);
+			removeChart(chartWidget);
+		else
+		{
+			QBasicGraphLineConfigList oldList = chartWidget->basicGraphLineConfigList();
+			for( BasicGraphLineConfig &oldHost : oldList )
+				if( !newList.contains(oldHost.mRemoteHost) )
+					chartWidget->delHost(oldHost);
 
-		QBasicGraphLineConfigList oldList = chartWidget->basicGraphLineConfigList();
-		for( BasicGraphLineConfig &oldHost : oldList )
-			if( !newList.contains(oldHost.mRemoteHost) )
-				chartWidget->delHost(oldHost);
-
-		for( BasicGraphLineConfig &host : newList  )
-			chartWidget->addHost(host);
+			for( BasicGraphLineConfig &host : newList  )
+				chartWidget->addHost(host);
+		}
+		saveCharts();
 	}
 }
 
-void QTabChartHolder::addChart(QBasicChartWidget *chartWidget)
+void QTabChartHolder::saveCharts() const
 {
+	QList<QBasicGraphLineConfigList> chartLineList;
+	for( const QBasicChartWidget *chart : mChartList )
+		chartLineList.append(chart->basicGraphLineConfigList());
+	mProjectManager.saveProject( chartLineList );
+}
+
+QPingChartWidget *QTabChartHolder::addPingChart(bool save)
+{
+	QPingChartWidget *chartWidget = new QPingChartWidget(this);
+	chartWidget->setObjectName(QString::fromUtf8("PingGraph"));
+
 	chartWidget->setMinimumHeight(200);
 	verticalLayout->addWidget(chartWidget);
 	mChartList.append(chartWidget);
 
 	chartWidget->setInitialTime(mInitialTime);
-	chartWidget->setTimes(mLeftTime, mRightTime);
+	chartWidget->setTimeRange(mLeftTime, mRightTime);
 	connect( chartWidget, &QBasicChartWidget::dobleClic, this, &QTabChartHolder::editChart );
+
+	if( save )
+		saveCharts();
+	return chartWidget;
 }
 
-void QTabChartHolder::removeChart(QBasicChartWidget *chartWidget)
+void QTabChartHolder::removeChart(QBasicChartWidget *chartWidget, bool save)
 {
 	mChartList.removeOne(chartWidget);
 	chartWidget->deleteLater();
+
+	if( save )
+		saveCharts();
 }
 
 void QTabChartHolder::play()

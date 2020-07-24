@@ -74,12 +74,7 @@ void MainWindow::on_delTabAction_triggered()
 void MainWindow::on_addGraphAction_triggered()
 {
 	if( QTabChartHolder *tab = static_cast<QTabChartHolder*>(ui->tabWidget->currentWidget()) )
-	{
-		QPingChartWidget *newPingChart = new QPingChartWidget(tab);
-		newPingChart->setObjectName(QString::fromUtf8("PingGraph"));
-		tab->addChart(newPingChart);
-		tab->editChart(newPingChart);
-	}
+		tab->editChart(tab->addPingChart(false));
 	else
 		qDebug() << "currentTabWidget() is not a QTabChartHolder instance";
 }

@@ -166,7 +166,7 @@ void QBasicChart::addValue(const QString &hostname, unsigned long value)
 	}
 }
 
-QBasicGraphLineConfigList QBasicChart::basicGraphLineConfigList()
+QBasicGraphLineConfigList QBasicChart::basicGraphLineConfigList() const
 {
 	QBasicGraphLineConfigList rtn;
 	foreach( const _line &l, lines )
@@ -199,7 +199,6 @@ QBasicChartWidget::QBasicChartWidget(QTabChartHolder *chartHolder)
 	: _qChartWidget(mChart = new QBasicChart)
 	, mChartHolder(chartHolder)
 {
-	setContextMenuPolicy(Qt::CustomContextMenu);
 }
 
 WorkerThread *QBasicChartWidget::getFreeThread()

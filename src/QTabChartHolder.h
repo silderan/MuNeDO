@@ -64,10 +64,11 @@ public:
 	QString projectFolder() const		{ return mProjectManager.projectFolder();		}
 	QString projectDescription() const	{ return mProjectManager.projectDescription();	}
 
+	void saveCharts() const;
 
+	QPingChartWidget *addPingChart(bool save = true);
 	void editChart(QBasicChartWidget *chartWidget);
-	void addChart(QBasicChartWidget *chartWidget);
-	void removeChart(QBasicChartWidget *chartWidget);
+	void removeChart(QBasicChartWidget *chartWidget, bool save = true);
 	void play();
 	void heartbeat();
 };
