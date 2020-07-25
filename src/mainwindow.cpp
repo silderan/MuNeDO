@@ -24,8 +24,8 @@
 #include "ui_mainwindow.h"
 
 #include "QTabChartHolder.h"
-#include "Dialogs/DlgNewTab.h"
-#include "projectmanager.h"
+#include "Dialogs/DlgNewProject.h"
+#include "ProjectManager.h"
 
 #include <QDebug>
 

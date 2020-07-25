@@ -20,7 +20,7 @@
 
 **************************************************************************/
 
-#include "projectmanager.h"
+#include "ProjectManager.h"
 
 #include <QObject>
 #include <QDir>

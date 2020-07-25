@@ -163,7 +163,7 @@ public:
 	QBasicChartLineConfigList basicChartLineConfigList() const;
 	void setInitialTime(const QDateTime &initialTime);
 
-	// Set times to be shown in graph.
+	// Set times to be shown in chart.
 	// If firstTime is invalid, it defaults to initialTime
 	// If lastTime is invalid, it defaults to currentTime.
 	void setTimes(const QDateTime &firstTime, const QDateTime &lastTime);
@@ -199,7 +199,7 @@ public:
 	void addHost(const BasicChartLineConfig &bglc)				{ addHost(bglc.mRemoteHost, bglc.mLineColor);	}
 	void delHost(const BasicChartLineConfig &bglc);
 	void setInitialTime(const QDateTime &initialTime)			{ mChart->setInitialTime(initialTime);	}
-	// Set times to be shown in graph.
+	// Set times to be shown in chart.
 	// If firstTime is invalid, it defaults to initialTime
 	// If lastTime is invalid, it defaults to currentTime.
 	void setTimeRange(const QDateTime &firstTime, const QDateTime &lastTime)	{ mChart->setTimes(firstTime, lastTime);	}

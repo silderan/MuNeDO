@@ -30,7 +30,7 @@
 #include <QToolButton>
 
 #include "QPingChartWidget.h"
-#include "projectmanager.h"
+#include "ProjectManager.h"
 
 #include <QList>
 #include <QLabel>

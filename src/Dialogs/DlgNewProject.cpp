@@ -20,13 +20,13 @@
 
 **************************************************************************/
 
-#include "DlgNewTab.h"
+#include "DlgNewProject.h"
 #include "ui_dlgnewtab.h"
 
 #include <QDir>
 #include <QMessageBox>
 
-#include "projectmanager.h"
+#include "ProjectManager.h"
 
 DlgNewTab::DlgNewTab(const QStringList &openedProjectFolders, QWidget *parent)
 	: QDialog(parent)

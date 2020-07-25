@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>DlgNewTab</class>
- <widget class="QDialog" name="DlgNewTab">
+ <class>DlgNewProject</class>
+ <widget class="QDialog" name="DlgNewProject">
   <property name="geometry">
    <rect>
     <x>0</x>
