@@ -20,7 +20,7 @@
 
 **************************************************************************/
 
-#include "ProjectManager.h"
+#include "projectmanager.h"
 
 #include <QObject>
 #include <QDir>
@@ -62,7 +62,7 @@ ProjectManager::ProjectManager_ErrorCode ProjectManager::createNewProject()
 		mLastErrorArg = mProjectFolder;
 		return ProjectManager_ErrorCode::NoError;
 	}
-	return saveProject(QList<QBasicChartLineConfigList>());
+	return saveProject();
 }
 
 ProjectManager::ProjectManager_ErrorCode ProjectManager::loadProject(const QString &folder)
@@ -84,7 +84,7 @@ ProjectManager::ProjectManager_ErrorCode ProjectManager::loadProject()
 	return ProjectManager_ErrorCode::NoError;
 }
 
-ProjectManager::ProjectManager_ErrorCode ProjectManager::saveProject(const QList<QBasicChartLineConfigList>  &chartLineList) const
+ProjectManager::ProjectManager_ErrorCode ProjectManager::saveProject() const
 {
 	Q_ASSERT( !mProjectFolder.isEmpty() );
 	Q_ASSERT( !mProjectDesc.isEmpty() );
@@ -97,13 +97,28 @@ ProjectManager::ProjectManager_ErrorCode ProjectManager::saveProject(const QList
 	if( !QIniFile::save(projectDataFileName(), data) )
 		return ProjectManager_ErrorCode::NoSaved;
 
-	for( int chartID = chartLineList.count()-1; chartID >= 0; --chartID )
-	{
-		ProjectManager_ErrorCode err = saveProjectChart(chartID, chartLineList.at(chartID));
-		if( err != ProjectManager_ErrorCode::NoError )
-			return err;
-	}
 	return ProjectManager_ErrorCode::NoError;
+}
+
+bool ProjectManager::saveChartConfig(int chartID, const QChartConfig &chartConfig) const
+{
+	QDir dir;
+	QString newFolder = projectChartsFolder(chartID);
+	dir.mkpath(newFolder);
+
+	QIniData chartData;
+	chartConfig.save(chartData);
+
+	return QIniFile::save(projectChartsFileName(chartID), chartData);
+}
+
+bool ProjectManager::loadChartConfig(int chartID, QChartConfig &chartConfig) const
+{
+	QIniData chartData;
+	if( QIniFile::load(projectChartsFileName(chartID), &chartData) )
+		return chartConfig.load(chartData);
+
+	return false;
 }
 
 ProjectManager::ProjectManager_ErrorCode ProjectManager::deleteProject()
@@ -112,58 +127,4 @@ ProjectManager::ProjectManager_ErrorCode ProjectManager::deleteProject()
 	if( !dir.removeRecursively() )
 		return ProjectManager::ProjectManager_ErrorCode::NoDelete;
 	return ProjectManager::ProjectManager_ErrorCode::NoError;
-}
-
-ProjectManager::ProjectManager_ErrorCode ProjectManager::saveProjectChart(int chartID, const QBasicChartLineConfigList &chartLines) const
-{
-	Q_ASSERT( !mProjectFolder.isEmpty() );
-
-	QDir dir;
-	QString newFolder = projectChartsFolder(chartID);
-	dir.mkpath(newFolder);
-
-	int i = 0;
-	QIniData data;
-	for( const BasicChartLineConfig &lineConfig : chartLines )
-	{
-		data[QString("line_%1_name").arg(i)] = lineConfig.mRemoteHost;
-		data[QString("line_%1_color").arg(i)] = QString("%1:%2:%3").arg(lineConfig.mLineColor.red()).arg(lineConfig.mLineColor.green()).arg(lineConfig.mLineColor.blue());
-		++i;
-	}
-	if( !QIniFile::save(projectChartsFileName(chartID), data) )
-		return ProjectManager_ErrorCode::NoSaved;
-	return ProjectManager_ErrorCode::NoError;
-}
-
-ProjectManager::ProjectManager_ErrorCode ProjectManager::loadProjectChart(int chartID, QBasicChartLineConfigList &chartLines) const
-{
-	QIniData data;
-
-	if( !QIniFile::load(projectChartsFileName(chartID), &data) )
-		return ProjectManager_ErrorCode::NoLoaded;
-
-	for( int i = 0; data.contains(QString("line_%1_name").arg(i)); ++i )
-	{
-		QStringList colors = data[QString("line_%1_color").arg(i)].split(":");
-		QString name = data[QString("line_%1_name").arg(i)];
-		if( colors.count() == 3 )
-			chartLines.append(BasicChartLineConfig(name, QColor(colors[0].toInt(),	// Red
-																colors[1].toInt(),	// Green
-																colors[2].toInt()) ));// Blue
-		else
-			return ProjectManager_ErrorCode::NoLoaded;
-	}
-	return ProjectManager_ErrorCode::NoError;
-}
-
-ProjectManager::ProjectManager_ErrorCode ProjectManager::loadProjectCharts(QList<QBasicChartLineConfigList> &chartLineList) const
-{
-	for( int chartID = 0; ; ++chartID )
-	{
-		QBasicChartLineConfigList chartLines;
-		ProjectManager_ErrorCode err = loadProjectChart(chartID, chartLines);
-		if( err != ProjectManager_ErrorCode::NoError )
-			return err;
-		chartLineList.append(chartLines);
-	}
 }

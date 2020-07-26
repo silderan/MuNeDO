@@ -24,6 +24,9 @@
 
 #include <QDialog>
 
+#include <QLineEdit>
+#include <QToolButton>
+
 #include "QPingChartWidget.h"
 
 namespace Ui
@@ -46,6 +49,29 @@ Q_OBJECT
 	QColor getButtonColor(QToolButton *btn);
 	void chooseColor();
 
+	struct _controlLine
+	{
+		QToolButton *clr;
+		QLineEdit *id;
+		QLineEdit *host;
+		QLineEdit *label;
+		_controlLine(QToolButton *clr, QLineEdit *id, QLineEdit *host, QLineEdit *label)
+			: clr(clr)
+			, id(id)
+			, host(host)
+			, label(label)
+		{	}
+		_controlLine(const _controlLine &other)
+			: clr(other.clr)
+			, id(other.id)
+			, host(other.host)
+			, label(other.label)
+		{	}
+	};
+	QList<_controlLine> mControlLines;
+
+	void setupLine(_controlLine &controlLine, const QLineConfig *lineConfig, const QColor &defaultClr);
+	void getLine(const _controlLine &controlLine);
 public:
 	explicit DlgEditPingChart(QBasicChartLineConfigList &chartLineConfigList, QWidget *parent);
 	~DlgEditPingChart();

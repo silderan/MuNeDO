@@ -36,71 +36,143 @@ void WorkerThread::run()
 
 QT_CHARTS_USE_NAMESPACE
 
-QBasicChart::QBasicChart(QGraphicsItem *parent, Qt::WindowFlags wFlags)
+bool QLineConfig::load(const QString &preKey, const QIniData &iniData)
+{
+	if( iniData.contains(QString("%1id").arg(preKey)) )
+	{
+		QStringList colors = iniData[QString("%1color").arg(preKey)].split(":");
+		if( colors.count() == 3 )
+		{
+			mID					= iniData[QString("%1id").arg(preKey)];
+			mLabel				= iniData[QString("%1label").arg(preKey)];
+			mRemoteHost			= iniData[QString("%1remote").arg(preKey)];
+			mRequestType		= iniData[QString("%1type").arg(preKey)];
+			mRequestValue		= iniData[QString("%1value").arg(preKey)];
+			mRequestParameters	= iniData[QString("%1params").arg(preKey)].split(",");
+			mLineColor			= QColor(colors[0].toInt(),		// Red
+										 colors[1].toInt(),		// Green
+										 colors[2].toInt());	// Blue
+			return true;
+		}
+	}
+	return false;
+}
+
+void QLineConfig::save(const QString &preKey, QIniData &iniData) const
+{
+	iniData[QString("%1id").arg(preKey)]		= mID;
+	iniData[QString("%1label").arg(preKey)]		= mLabel;
+	iniData[QString("%1remote").arg(preKey)]	= mRemoteHost;
+	iniData[QString("%1type").arg(preKey)]		= mRequestType;
+	iniData[QString("%1value").arg(preKey)]		= mRequestValue;
+	iniData[QString("%1params").arg(preKey)]	= mRequestParameters.join(",");
+	iniData[QString("%1color").arg(preKey)]		= QString("%1:%2:%3").arg(mLineColor.red())
+																				 .arg(mLineColor.green())
+																				 .arg(mLineColor.blue());
+}
+
+bool QChartConfig::load(const QIniData &data)
+{
+	mChartType = data["chartType"];
+	QLineConfig lineConfig;
+	for( int lineID = 0 ; lineConfig.load(QString("line_%1_").arg(lineID), data); ++lineID )
+		mLines.append(lineConfig);
+	return true;
+}
+
+QIniData &QChartConfig::save(QIniData &data) const
+{
+	data["chartType"] = mChartType;
+	int lineID = 0;
+	for( const QLineConfig &lineConfig : mLines )
+		lineConfig.save(QString("line_%1_").arg(lineID++), data);
+	return data;
+}
+
+QBasicChart::QBasicChart(const QString &chartType, QGraphicsItem *parent, Qt::WindowFlags wFlags)
 	: QChart(QChart::ChartTypeCartesian, parent, wFlags)
+	, mChartType(chartType)
 {
 	setMargins( QMargins() );
 }
 
-QBasicChart::_line &QBasicChart::addLine(const QString &hostname, const QColor &clr)
+QChartConfig QBasicChart::getChartConfig() const
 {
-	if( lines.contains(hostname) )
-	{
-		_line &line = lines[hostname];
-		line.changeColor(clr);
-		return line;
-	}
-	lines.insert(hostname, _line());
-	_line &line = lines[hostname];
+	QChartConfig chartConfig;
 
-	line.mBasicChartLineConfig.mRemoteHost = hostname;
-	line.mBasicChartLineConfig.mLineColor = clr;
+	chartConfig.mChartType = mChartType;
+	for( const QChartLine &line : lines )
+		chartConfig.mLines.append(line);
 
-	addSeries(line.series);
-
-	addAxis(line.axisX, Qt::AlignBottom);
-	addAxis(line.axisY, Qt::AlignLeft);
-
-	line.series->attachAxis(line.axisX);
-	line.series->attachAxis(line.axisY);
-	line.series->setName(hostname);
-
-	line.changeColor(clr);
-
-	line.axisX->setRange( leftLimit.isValid() ? leftLimit : mInitialTime.isValid() ? mInitialTime : QDateTime::currentDateTime(),
-						  rightLimit.isValid() ? rightLimit : QDateTime::currentDateTime().addMSecs(1) );
-
-	// If it's the first line, it must be visible. The other ones muy be hiden.
-	if( lines.count() != 1 )
-	{
-		line.axisY->hide();
-		line.axisX->hide();
-	}
-
-	return line;
+	return chartConfig;
 }
 
-void QBasicChart::delLine(const BasicChartLineConfig &bglc)
+QChartLine &QBasicChart::addLine(const QLineConfig &lineConfig)
 {
-	_line line = lines[bglc.mRemoteHost];
+	QChartLine &line = lines[lineConfig.mID];
+	if( line.isValid() )
+	{
+		line.changeColor(lineConfig.mLineColor);
+		line.setLabel(lineConfig.mLabel);
+		return line;
+	}
+	else
+	{
+		lines.append(QChartLine(lineConfig));
+		QChartLine &line = lines.last();
+
+		line = lineConfig;
+		line.series = new _qLineSeries();
+		line.axisX = new _qTimeAxis();
+		line.axisY = new _qValueAxis();
+
+		line.axisX->setTickCount(1);
+		line.axisX->setFormat("dd/MM/yy hh:mm:ss");
+		line.axisY->setLabelFormat("%ims");
+
+		addSeries(line.series);
+
+		addAxis(line.axisX, Qt::AlignBottom);
+		addAxis(line.axisY, Qt::AlignLeft);
+
+		line.series->attachAxis(line.axisX);
+		line.series->attachAxis(line.axisY);
+
+		line.setLabel(line.mLabel);
+		line.changeColor(line.mLineColor);
+
+		line.axisX->setRange( leftLimit.isValid() ? leftLimit : mInitialTime.isValid() ? mInitialTime : QDateTime::currentDateTime(),
+							  rightLimit.isValid() ? rightLimit : QDateTime::currentDateTime().addMSecs(1) );
+
+		// If it's the first line, it must be visible. The other ones muy be hiden.
+		if( lines.count() != 1 )
+		{
+			line.axisY->hide();
+			line.axisX->hide();
+		}
+		return line;
+	}
+}
+
+void QBasicChart::delLine(const QLineConfig &lineConfig)
+{
+	QChartLine &line = lines[lineConfig.mID];
 	removeAxis( line.axisX );
 	removeAxis( line.axisY );
 	removeSeries( line.series );
-	lines.remove( bglc.mRemoteHost );
+
+	line.axisX->deleteLater();	line.axisX = Q_NULLPTR;
+	line.axisY->deleteLater();	line.axisY = Q_NULLPTR;
+	line.series->deleteLater();	line.series = Q_NULLPTR;
+
+	lines.remove( lineConfig.mID );
 
 	// If line is visible, as it's gona be removed, visibility goes to another one.
-	if( line.axisX->isVisible() && lines.count() )
+	if( lines.count() && !lines.first().axisX->isVisible() )
 	{
 		lines.first().axisX->show();
 		lines.first().axisY->show();
 	}
-	line.axisX->deleteLater();
-	line.axisX = Q_NULLPTR;
-	line.axisY->deleteLater();
-	line.axisY = Q_NULLPTR;
-	line.series->deleteLater();
-	line.series = Q_NULLPTR;
-
 	updateChartMaxAxis();
 }
 
@@ -112,7 +184,7 @@ void QBasicChart::updateChartMaxAxis()
 	qreal minTime = leftLimit.isValid() ? leftLimit.toMSecsSinceEpoch() : 0;
 	qreal maxTime = rightLimit.isValid() ? rightLimit.toMSecsSinceEpoch() : QDateTime::currentMSecsSinceEpoch();
 	qreal curTime;
-	for( const _line &line : lines )
+	for( const QChartLine &line : lines )
 	{
 		for( int i = line.series->count()-1; i>=0; --i )
 		{
@@ -129,7 +201,7 @@ void QBasicChart::updateChartMaxAxis()
 
 void QBasicChart::setValueRange(const qreal &min, const qreal &max)
 {
-	for( _line &line : lines )
+	for( QChartLine &line : lines )
 		line.axisY->setRange(min, max);
 }
 
@@ -140,25 +212,23 @@ void QBasicChart::setTimeRange(const qreal &minMSec, const qreal &maxMSec)
 
 void QBasicChart::setTimeRange(const QDateTime &minTime, const QDateTime &maxTime)
 {
-	for( _line &line : lines )
+	for( QChartLine &line : lines )
 		line.axisX->setRange( minTime, maxTime );
 }
 
-void QBasicChart::addValue(const QString &hostname, unsigned long value)
+void QBasicChart::addValue(const QString &lineID, unsigned long value)
 {
-	if( not lines.contains(hostname) )
+	if( !lines.contains(lineID) )
 	{
-		qDebug() << "En las lineas del gráfico, no existe el hostname " << hostname <<". Quizá se haya borrado.";
+		qDebug() << "Ninguna linea con ID " << lineID <<". Quizá se haya borrado.";
 		return;
 	}
 
 //	qDebug() << "Adding in " << hostname << ": " << value << " at " << QDateTime::currentDateTime();
-	lines[hostname].series->append(QDateTime::currentMSecsSinceEpoch(), value);
+	lines[lineID].series->append(QDateTime::currentMSecsSinceEpoch(), value);
 
-	for( const QString &host : lines.keys() )
+	for( QChartLine &line : lines )
 	{
-		_line &line = lines[host];
-
 		if( value > line.axisY->max() )
 			line.axisY->setMax(value);
 		if( !rightLimit.isValid() )
@@ -166,21 +236,11 @@ void QBasicChart::addValue(const QString &hostname, unsigned long value)
 	}
 }
 
-QBasicChartLineConfigList QBasicChart::basicChartLineConfigList() const
-{
-	QBasicChartLineConfigList rtn;
-	foreach( const _line &l, lines )
-	{
-		rtn.append( BasicChartLineConfig(l.mBasicChartLineConfig.mRemoteHost, l.mBasicChartLineConfig.mLineColor) );
-	}
-	return rtn;
-}
-
 void QBasicChart::setInitialTime(const QDateTime &initialTime)
 {
 	mInitialTime = initialTime;
-	for( const QString &host : lines.keys() )
-		lines[host].axisX->setMin(initialTime);
+	for( QChartLine &line : lines )
+		line.axisX->setMin(initialTime);
 }
 
 void QBasicChart::setTimes(const QDateTime &firstTime, const QDateTime &lastTime)
@@ -188,15 +248,12 @@ void QBasicChart::setTimes(const QDateTime &firstTime, const QDateTime &lastTime
 	leftLimit = firstTime.isValid() ? firstTime : mInitialTime;
 	rightLimit = lastTime;
 
-	for( const QString &host : lines.keys() )
-	{
-		_line &line = lines[host];
+	for( QChartLine &line : lines )
 		line.axisX->setRange( leftLimit, rightLimit.isValid() ? rightLimit : QDateTime::currentDateTime() );
-	}
 }
 
-QBasicChartWidget::QBasicChartWidget(QTabChartHolder *chartHolder)
-	: _qChartWidget(mChart = new QBasicChart)
+QBasicChartWidget::QBasicChartWidget(QTabChartHolder *chartHolder, const QString &chartType)
+	: _qChartWidget(mChart = new QBasicChart(chartType))
 	, mChartHolder(chartHolder)
 {
 }
@@ -217,32 +274,28 @@ WorkerThread *QBasicChartWidget::getFreeThread()
 
 void QBasicChartWidget::mouseDoubleClickEvent(QMouseEvent *event)
 {
+	Q_UNUSED(event);
 	emit dobleClic(this);
 }
 
 void QBasicChartWidget::heartbeat()
 {
-	for( BasicChartLineConfig &cnfg : mChartLineConfigList )
+	for( const QChartLine &line : chartLines() )
 	{
 		WorkerThread *wt = getFreeThread();
-		wt->setHostname(cnfg.mRemoteHost);
+		wt->setHostname( line.mRemoteHost );
+		wt->setID( line.mID );
 		wt->start();
 	}
 }
 
-void QBasicChartWidget::addHost(const QString &hostname, const QColor &clr)
-{
-	chart()->addLine(hostname, clr);
-	mChartLineConfigList.append(BasicChartLineConfig(hostname, clr));
-}
-
-void QBasicChartWidget::delHost(const BasicChartLineConfig &bglc)
+void QBasicChartWidget::delHost(const QLineConfig &bglc)
 {
 	chart()->delLine(bglc);
-	mChartLineConfigList.removeOne(bglc);
 }
 
 void QBasicChartWidget::on_ResultReady(WorkerThread *wt)
 {
-	addValue( wt->hostname(), wt->resultData().toUInt() );
+	addValue( wt->id(), wt->resultData().toUInt() );
 }
+

@@ -24,12 +24,16 @@
 #define PROJECTMANAGER_H
 
 #include <QString>
+#include "Basic/QIniFile.h"
 
 #define PROJECT_DATA_FNAME "project.data"
 #define PROJECT_CHARTS_FNAME "charts.data"
 
 class QBasicChartLineConfigList;
 class QBasicChartWidget;
+class QBasicChart;
+class QChartConfig;
+class QChartLineList;
 
 class ProjectManager
 {
@@ -58,9 +62,6 @@ private:
 	QString projectChartsFolder(int chartID) const		{ return QString("%1/chart_%2").arg(projectPathFolder()).arg(chartID);	}
 	QString projectChartsFileName(int chartID) const	{ return QString("%1/chart_%2/%3").arg(projectPathFolder()).arg(chartID).arg(PROJECT_CHARTS_FNAME);	}
 
-	ProjectManager_ErrorCode saveProjectChart(int chartID, const QBasicChartLineConfigList &chartLines) const;
-	ProjectManager_ErrorCode loadProjectChart(int chartID, QBasicChartLineConfigList &chartLines) const;
-
 public:
 	ProjectManager(const QString &name, const QString &folder, const QString &description = QString());
 	ProjectManager(const QString &folder);
@@ -77,10 +78,10 @@ public:
 
 	ProjectManager_ErrorCode loadProject(const QString &folder);
 	ProjectManager_ErrorCode loadProject();
-	ProjectManager_ErrorCode saveProject(const QList<QBasicChartLineConfigList> &chartLineList) const;
+	ProjectManager_ErrorCode saveProject() const;
+	bool saveChartConfig(int chartID, const QChartConfig &chartConfig) const;
+	bool loadChartConfig(int chartID, QChartConfig &chartConfig) const;
 	ProjectManager_ErrorCode deleteProject();
-
-	ProjectManager_ErrorCode loadProjectCharts(QList<QBasicChartLineConfigList> &chartLineList)const;
 };
 
 #endif // PROJECTMANAGER_H

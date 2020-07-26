@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>356</width>
+    <width>497</width>
     <height>363</height>
    </rect>
   </property>
@@ -14,79 +14,205 @@
    <string>Editar destinos del ping</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="8" column="0" colspan="3">
-    <widget class="QLineEdit" name="host8LineEdit"/>
-   </item>
-   <item row="4" column="0" colspan="3">
-    <widget class="QLineEdit" name="host4LineEdit"/>
-   </item>
-   <item row="10" column="3">
-    <widget class="QToolButton" name="host10Button">
+   <item row="0" column="0">
+    <widget class="QLabel" name="label_4">
      <property name="text">
-      <string>...</string>
+      <string>Nombre visible</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
      </property>
     </widget>
    </item>
-   <item row="0" column="3">
+   <item row="0" column="1">
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>Host destino</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="2">
     <widget class="QLabel" name="label_2">
      <property name="text">
       <string>Color</string>
      </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
     </widget>
    </item>
-   <item row="4" column="3">
-    <widget class="QToolButton" name="host4Button">
+   <item row="0" column="3">
+    <widget class="QLabel" name="label_3">
+     <property name="text">
+      <string>ID</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QLineEdit" name="name1LineEdit"/>
+   </item>
+   <item row="1" column="1">
+    <widget class="QLineEdit" name="host1LineEdit"/>
+   </item>
+   <item row="1" column="2">
+    <widget class="QToolButton" name="host1Button">
      <property name="text">
       <string>...</string>
      </property>
     </widget>
    </item>
-   <item row="9" column="0" colspan="3">
-    <widget class="QLineEdit" name="host9LineEdit"/>
+   <item row="1" column="3">
+    <widget class="QLineEdit" name="id1LineEdit"/>
    </item>
-   <item row="2" column="3">
+   <item row="2" column="0">
+    <widget class="QLineEdit" name="name2LineEdit"/>
+   </item>
+   <item row="2" column="1">
+    <widget class="QLineEdit" name="host2LineEdit"/>
+   </item>
+   <item row="2" column="2">
     <widget class="QToolButton" name="host2Button">
      <property name="text">
       <string>...</string>
      </property>
     </widget>
    </item>
-   <item row="0" column="0">
-    <widget class="QLabel" name="label">
-     <property name="text">
-      <string>Host destino</string>
-     </property>
-    </widget>
+   <item row="2" column="3">
+    <widget class="QLineEdit" name="id2LineEdit"/>
    </item>
-   <item row="7" column="0" colspan="3">
-    <widget class="QLineEdit" name="host7LineEdit"/>
+   <item row="3" column="0">
+    <widget class="QLineEdit" name="name3LineEdit"/>
    </item>
-   <item row="3" column="3">
+   <item row="3" column="1">
+    <widget class="QLineEdit" name="host3LineEdit"/>
+   </item>
+   <item row="3" column="2">
     <widget class="QToolButton" name="host3Button">
      <property name="text">
       <string>...</string>
      </property>
     </widget>
    </item>
-   <item row="5" column="0" colspan="3">
+   <item row="3" column="3">
+    <widget class="QLineEdit" name="id3LineEdit"/>
+   </item>
+   <item row="4" column="0">
+    <widget class="QLineEdit" name="name4LineEdit"/>
+   </item>
+   <item row="4" column="1">
+    <widget class="QLineEdit" name="host4LineEdit"/>
+   </item>
+   <item row="4" column="2">
+    <widget class="QToolButton" name="host4Button">
+     <property name="text">
+      <string>...</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="3">
+    <widget class="QLineEdit" name="id4LineEdit"/>
+   </item>
+   <item row="5" column="0">
+    <widget class="QLineEdit" name="name5LineEdit"/>
+   </item>
+   <item row="5" column="1">
     <widget class="QLineEdit" name="host5LineEdit"/>
    </item>
-   <item row="10" column="0" colspan="3">
-    <widget class="QLineEdit" name="host10LineEdit"/>
+   <item row="5" column="2">
+    <widget class="QToolButton" name="host5Button">
+     <property name="text">
+      <string>...</string>
+     </property>
+    </widget>
    </item>
-   <item row="7" column="3">
+   <item row="5" column="3">
+    <widget class="QLineEdit" name="id5LineEdit"/>
+   </item>
+   <item row="6" column="0">
+    <widget class="QLineEdit" name="name6LineEdit"/>
+   </item>
+   <item row="6" column="1">
+    <widget class="QLineEdit" name="host6LineEdit"/>
+   </item>
+   <item row="6" column="2">
+    <widget class="QToolButton" name="host6Button">
+     <property name="text">
+      <string>...</string>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="3">
+    <widget class="QLineEdit" name="id6LineEdit"/>
+   </item>
+   <item row="7" column="0">
+    <widget class="QLineEdit" name="name7LineEdit"/>
+   </item>
+   <item row="7" column="1">
+    <widget class="QLineEdit" name="host7LineEdit"/>
+   </item>
+   <item row="7" column="2">
     <widget class="QToolButton" name="host7Button">
      <property name="text">
       <string>...</string>
      </property>
     </widget>
    </item>
-   <item row="8" column="3">
+   <item row="7" column="3">
+    <widget class="QLineEdit" name="id7LineEdit"/>
+   </item>
+   <item row="8" column="0">
+    <widget class="QLineEdit" name="name8LineEdit"/>
+   </item>
+   <item row="8" column="1">
+    <widget class="QLineEdit" name="host8LineEdit"/>
+   </item>
+   <item row="8" column="2">
     <widget class="QToolButton" name="host8Button">
      <property name="text">
       <string>...</string>
      </property>
     </widget>
+   </item>
+   <item row="8" column="3">
+    <widget class="QLineEdit" name="id8LineEdit"/>
+   </item>
+   <item row="9" column="0">
+    <widget class="QLineEdit" name="name9LineEdit"/>
+   </item>
+   <item row="9" column="1">
+    <widget class="QLineEdit" name="host9LineEdit"/>
+   </item>
+   <item row="9" column="2">
+    <widget class="QToolButton" name="host9Button">
+     <property name="text">
+      <string>...</string>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="3">
+    <widget class="QLineEdit" name="id9LineEdit"/>
+   </item>
+   <item row="10" column="0">
+    <widget class="QLineEdit" name="name10LineEdit"/>
+   </item>
+   <item row="10" column="1">
+    <widget class="QLineEdit" name="host10LineEdit"/>
+   </item>
+   <item row="10" column="2">
+    <widget class="QToolButton" name="host10Button">
+     <property name="text">
+      <string>...</string>
+     </property>
+    </widget>
+   </item>
+   <item row="10" column="3">
+    <widget class="QLineEdit" name="id10LineEdit"/>
    </item>
    <item row="11" column="0">
     <widget class="QPushButton" name="acceptButton">
@@ -101,90 +227,64 @@
      </property>
     </widget>
    </item>
-   <item row="11" column="2">
+   <item row="11" column="3">
     <widget class="QPushButton" name="removeChartButton">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
      <property name="text">
       <string>Borrar gráfico</string>
      </property>
     </widget>
    </item>
-   <item row="6" column="0" colspan="3">
-    <widget class="QLineEdit" name="host6LineEdit"/>
-   </item>
-   <item row="5" column="3">
-    <widget class="QToolButton" name="host5Button">
-     <property name="text">
-      <string>...</string>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="3">
-    <widget class="QToolButton" name="host1Button">
-     <property name="text">
-      <string>...</string>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="0" colspan="3">
-    <widget class="QLineEdit" name="host1LineEdit"/>
-   </item>
-   <item row="9" column="3">
-    <widget class="QToolButton" name="host9Button">
-     <property name="text">
-      <string>...</string>
-     </property>
-    </widget>
-   </item>
-   <item row="6" column="3">
-    <widget class="QToolButton" name="host6Button">
-     <property name="text">
-      <string>...</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="0" colspan="3">
-    <widget class="QLineEdit" name="host2LineEdit"/>
-   </item>
-   <item row="3" column="0" colspan="3">
-    <widget class="QLineEdit" name="host3LineEdit"/>
-   </item>
-   <item row="11" column="1">
-    <spacer name="horizontalSpacer">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>40</width>
-       <height>20</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
   </layout>
  </widget>
  <tabstops>
+  <tabstop>name1LineEdit</tabstop>
   <tabstop>host1LineEdit</tabstop>
-  <tabstop>host1Button</tabstop>
+  <tabstop>name2LineEdit</tabstop>
   <tabstop>host2LineEdit</tabstop>
-  <tabstop>host2Button</tabstop>
+  <tabstop>name3LineEdit</tabstop>
   <tabstop>host3LineEdit</tabstop>
-  <tabstop>host3Button</tabstop>
+  <tabstop>name4LineEdit</tabstop>
   <tabstop>host4LineEdit</tabstop>
-  <tabstop>host4Button</tabstop>
+  <tabstop>name5LineEdit</tabstop>
   <tabstop>host5LineEdit</tabstop>
-  <tabstop>host5Button</tabstop>
+  <tabstop>name6LineEdit</tabstop>
   <tabstop>host6LineEdit</tabstop>
-  <tabstop>host6Button</tabstop>
+  <tabstop>name7LineEdit</tabstop>
   <tabstop>host7LineEdit</tabstop>
-  <tabstop>host7Button</tabstop>
+  <tabstop>name8LineEdit</tabstop>
   <tabstop>host8LineEdit</tabstop>
-  <tabstop>host8Button</tabstop>
+  <tabstop>name9LineEdit</tabstop>
   <tabstop>host9LineEdit</tabstop>
-  <tabstop>host9Button</tabstop>
+  <tabstop>name10LineEdit</tabstop>
   <tabstop>host10LineEdit</tabstop>
+  <tabstop>id1LineEdit</tabstop>
+  <tabstop>id2LineEdit</tabstop>
+  <tabstop>id3LineEdit</tabstop>
+  <tabstop>id4LineEdit</tabstop>
+  <tabstop>id5LineEdit</tabstop>
+  <tabstop>id6LineEdit</tabstop>
+  <tabstop>id7LineEdit</tabstop>
+  <tabstop>id8LineEdit</tabstop>
+  <tabstop>id9LineEdit</tabstop>
+  <tabstop>id10LineEdit</tabstop>
+  <tabstop>host1Button</tabstop>
+  <tabstop>host2Button</tabstop>
+  <tabstop>host3Button</tabstop>
+  <tabstop>host4Button</tabstop>
+  <tabstop>host5Button</tabstop>
+  <tabstop>host6Button</tabstop>
+  <tabstop>host7Button</tabstop>
+  <tabstop>host8Button</tabstop>
+  <tabstop>host9Button</tabstop>
   <tabstop>host10Button</tabstop>
   <tabstop>acceptButton</tabstop>
+  <tabstop>removeChartButton</tabstop>
  </tabstops>
  <resources/>
  <connections/>

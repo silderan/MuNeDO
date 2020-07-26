@@ -31,38 +31,28 @@ DlgEditPingChart::DlgEditPingChart(QBasicChartLineConfigList &chartLineConfigLis
 	, mRemoveChart(false)
 {
 	ui->setupUi(this);
-	setButtonColor(ui->host1Button, mChartLineConfigList.count() > 0 ? mChartLineConfigList.at(0).mLineColor : Qt::red);
-	setButtonColor(ui->host2Button, mChartLineConfigList.count() > 1 ? mChartLineConfigList.at(1).mLineColor : Qt::green);
-	setButtonColor(ui->host3Button, mChartLineConfigList.count() > 2 ? mChartLineConfigList.at(2).mLineColor : Qt::blue);
-	setButtonColor(ui->host4Button, mChartLineConfigList.count() > 3 ? mChartLineConfigList.at(3).mLineColor : Qt::darkGray);
-	setButtonColor(ui->host5Button, mChartLineConfigList.count() > 4 ? mChartLineConfigList.at(4).mLineColor : Qt::cyan);
-	setButtonColor(ui->host6Button, mChartLineConfigList.count() > 5 ? mChartLineConfigList.at(5).mLineColor : Qt::magenta);
-	setButtonColor(ui->host7Button, mChartLineConfigList.count() > 6 ? mChartLineConfigList.at(6).mLineColor : Qt::yellow);
-	setButtonColor(ui->host8Button, mChartLineConfigList.count() > 7 ? mChartLineConfigList.at(7).mLineColor : Qt::darkRed);
-	setButtonColor(ui->host9Button, mChartLineConfigList.count() > 8 ? mChartLineConfigList.at(8).mLineColor : Qt::darkGreen);
-	setButtonColor(ui->host10Button, mChartLineConfigList.count()> 9 ? mChartLineConfigList.at(9).mLineColor : Qt::darkBlue);
 
-	if( mChartLineConfigList.count() > 0 ) ui->host1LineEdit->setText( mChartLineConfigList.at(0).mRemoteHost );
-	if( mChartLineConfigList.count() > 1 ) ui->host2LineEdit->setText( mChartLineConfigList.at(1).mRemoteHost );
-	if( mChartLineConfigList.count() > 2 ) ui->host3LineEdit->setText( mChartLineConfigList.at(2).mRemoteHost );
-	if( mChartLineConfigList.count() > 3 ) ui->host4LineEdit->setText( mChartLineConfigList.at(3).mRemoteHost );
-	if( mChartLineConfigList.count() > 4 ) ui->host5LineEdit->setText( mChartLineConfigList.at(4).mRemoteHost );
-	if( mChartLineConfigList.count() > 5 ) ui->host6LineEdit->setText( mChartLineConfigList.at(5).mRemoteHost );
-	if( mChartLineConfigList.count() > 6 ) ui->host7LineEdit->setText( mChartLineConfigList.at(6).mRemoteHost );
-	if( mChartLineConfigList.count() > 7 ) ui->host8LineEdit->setText( mChartLineConfigList.at(7).mRemoteHost );
-	if( mChartLineConfigList.count() > 8 ) ui->host9LineEdit->setText( mChartLineConfigList.at(8).mRemoteHost );
-	if( mChartLineConfigList.count() > 9 ) ui->host10LineEdit->setText(mChartLineConfigList.at(9).mRemoteHost );
+	mControlLines.append( _controlLine(ui->host1Button, ui->id1LineEdit, ui->host1LineEdit, ui->name1LineEdit) );
+	mControlLines.append( _controlLine(ui->host2Button, ui->id2LineEdit, ui->host2LineEdit, ui->name2LineEdit) );
+	mControlLines.append( _controlLine(ui->host3Button, ui->id3LineEdit, ui->host3LineEdit, ui->name3LineEdit) );
+	mControlLines.append( _controlLine(ui->host4Button, ui->id4LineEdit, ui->host4LineEdit, ui->name4LineEdit) );
+	mControlLines.append( _controlLine(ui->host5Button, ui->id5LineEdit, ui->host5LineEdit, ui->name5LineEdit) );
+	mControlLines.append( _controlLine(ui->host6Button, ui->id6LineEdit, ui->host6LineEdit, ui->name6LineEdit) );
+	mControlLines.append( _controlLine(ui->host7Button, ui->id7LineEdit, ui->host7LineEdit, ui->name7LineEdit) );
+	mControlLines.append( _controlLine(ui->host8Button, ui->id8LineEdit, ui->host8LineEdit, ui->name8LineEdit) );
+	mControlLines.append( _controlLine(ui->host9Button, ui->id9LineEdit, ui->host9LineEdit, ui->name9LineEdit) );
+	mControlLines.append( _controlLine(ui->host10Button,ui->id10LineEdit,ui->host10LineEdit,ui->name10LineEdit) );
 
-	connect( ui->host1Button, &QToolButton::clicked, this, &DlgEditPingChart::chooseColor );
-	connect( ui->host2Button, &QToolButton::clicked, this, &DlgEditPingChart::chooseColor );
-	connect( ui->host3Button, &QToolButton::clicked, this, &DlgEditPingChart::chooseColor );
-	connect( ui->host4Button, &QToolButton::clicked, this, &DlgEditPingChart::chooseColor );
-	connect( ui->host5Button, &QToolButton::clicked, this, &DlgEditPingChart::chooseColor );
-	connect( ui->host6Button, &QToolButton::clicked, this, &DlgEditPingChart::chooseColor );
-	connect( ui->host7Button, &QToolButton::clicked, this, &DlgEditPingChart::chooseColor );
-	connect( ui->host8Button, &QToolButton::clicked, this, &DlgEditPingChart::chooseColor );
-	connect( ui->host9Button, &QToolButton::clicked, this, &DlgEditPingChart::chooseColor );
-	connect( ui->host10Button,&QToolButton::clicked, this, &DlgEditPingChart::chooseColor );
+	setupLine( mControlLines[0], mChartLineConfigList.count() > 0 ? &mChartLineConfigList.at(0) : Q_NULLPTR, Qt::red );
+	setupLine( mControlLines[1], mChartLineConfigList.count() > 1 ? &mChartLineConfigList.at(1) : Q_NULLPTR, Qt::green );
+	setupLine( mControlLines[2], mChartLineConfigList.count() > 2 ? &mChartLineConfigList.at(2) : Q_NULLPTR, Qt::blue );
+	setupLine( mControlLines[3], mChartLineConfigList.count() > 3 ? &mChartLineConfigList.at(3) : Q_NULLPTR, Qt::darkGray );
+	setupLine( mControlLines[4], mChartLineConfigList.count() > 4 ? &mChartLineConfigList.at(4) : Q_NULLPTR, Qt::cyan );
+	setupLine( mControlLines[5], mChartLineConfigList.count() > 5 ? &mChartLineConfigList.at(5) : Q_NULLPTR, Qt::magenta );
+	setupLine( mControlLines[6], mChartLineConfigList.count() > 6 ? &mChartLineConfigList.at(6) : Q_NULLPTR, Qt::yellow );
+	setupLine( mControlLines[7], mChartLineConfigList.count() > 7 ? &mChartLineConfigList.at(7) : Q_NULLPTR, Qt::darkRed );
+	setupLine( mControlLines[8], mChartLineConfigList.count() > 8 ? &mChartLineConfigList.at(8) : Q_NULLPTR, Qt::darkGreen );
+	setupLine( mControlLines[9], mChartLineConfigList.count() > 9 ? &mChartLineConfigList.at(9) : Q_NULLPTR, Qt::darkBlue );
 }
 
 
@@ -86,6 +76,36 @@ void DlgEditPingChart::chooseColor()
 	setButtonColor(btn, QColorDialog::getColor(getButtonColor(btn), this, tr("Color de la linea")));
 }
 
+void DlgEditPingChart::setupLine(DlgEditPingChart::_controlLine &controlLine, const QLineConfig *lineConfig, const QColor &defaultClr)
+{
+	if( lineConfig )
+	{
+		setButtonColor(controlLine.clr, lineConfig ? lineConfig->mLineColor : defaultClr);
+
+		controlLine.id->setText( lineConfig->mID );
+		controlLine.label->setText( lineConfig->mLabel );
+		controlLine.host->setText( lineConfig->mRemoteHost );
+	}
+	else
+		setButtonColor(controlLine.clr, defaultClr);
+
+	connect( controlLine.clr, &QToolButton::clicked, this, &DlgEditPingChart::chooseColor );
+	connect( controlLine.label, &QLineEdit::textChanged, [=](const QString &txt) { controlLine.id->setText(QString("id_%1").arg(txt));} );
+}
+
+void DlgEditPingChart::getLine(const DlgEditPingChart::_controlLine &controlLine)
+{
+	if( !controlLine.label->text().isEmpty() && !controlLine.host->text().isEmpty() )
+		mChartLineConfigList.append(
+				QLineConfig( controlLine.id->text(),
+									  controlLine.label->text(),
+									  controlLine.host->text(),
+									  "ping",
+									  "",
+									  QStringList(),
+									  getButtonColor(controlLine.clr)) );
+}
+
 DlgEditPingChart::~DlgEditPingChart()
 {
 	delete ui;
@@ -94,16 +114,8 @@ DlgEditPingChart::~DlgEditPingChart()
 void DlgEditPingChart::on_acceptButton_clicked()
 {
 	mChartLineConfigList.clear();
-	if( !ui->host1LineEdit->text().isEmpty() ) mChartLineConfigList.append(BasicChartLineConfig(ui->host1LineEdit->text(), getButtonColor(ui->host1Button)) );
-	if( !ui->host2LineEdit->text().isEmpty() ) mChartLineConfigList.append(BasicChartLineConfig(ui->host2LineEdit->text(), getButtonColor(ui->host2Button)) );
-	if( !ui->host3LineEdit->text().isEmpty() ) mChartLineConfigList.append(BasicChartLineConfig(ui->host3LineEdit->text(), getButtonColor(ui->host3Button)) );
-	if( !ui->host4LineEdit->text().isEmpty() ) mChartLineConfigList.append(BasicChartLineConfig(ui->host4LineEdit->text(), getButtonColor(ui->host4Button)) );
-	if( !ui->host5LineEdit->text().isEmpty() ) mChartLineConfigList.append(BasicChartLineConfig(ui->host5LineEdit->text(), getButtonColor(ui->host5Button)) );
-	if( !ui->host6LineEdit->text().isEmpty() ) mChartLineConfigList.append(BasicChartLineConfig(ui->host6LineEdit->text(), getButtonColor(ui->host6Button)) );
-	if( !ui->host7LineEdit->text().isEmpty() ) mChartLineConfigList.append(BasicChartLineConfig(ui->host7LineEdit->text(), getButtonColor(ui->host7Button)) );
-	if( !ui->host8LineEdit->text().isEmpty() ) mChartLineConfigList.append(BasicChartLineConfig(ui->host8LineEdit->text(), getButtonColor(ui->host8Button)) );
-	if( !ui->host9LineEdit->text().isEmpty() ) mChartLineConfigList.append(BasicChartLineConfig(ui->host9LineEdit->text(), getButtonColor(ui->host9Button)) );
-	if( !ui->host10LineEdit->text().isEmpty()) mChartLineConfigList.append(BasicChartLineConfig(ui->host10LineEdit->text(),getButtonColor(ui->host10Button)) );
+	for( const DlgEditPingChart::_controlLine &ctrLine : mControlLines )
+		getLine(ctrLine);
 	accept();
 }
 

@@ -29,7 +29,7 @@ class QPingChartWidget : public QBasicChartWidget
 {
 public:
 	QPingChartWidget(QTabChartHolder *chartHolder)
-		: QBasicChartWidget(chartHolder)
+		: QBasicChartWidget(chartHolder, "ping")
 	{	}
 	virtual void on_DoJob(WorkerThread *wt) override;
 };
