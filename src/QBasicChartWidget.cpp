@@ -289,9 +289,9 @@ void QBasicChartWidget::heartbeat()
 	}
 }
 
-void QBasicChartWidget::delHost(const QLineConfig &bglc)
+void QBasicChartWidget::delHost(const QLineConfig &lineConfig)
 {
-	chart()->delLine(bglc);
+	chart()->delLine(lineConfig);
 }
 
 void QBasicChartWidget::on_ResultReady(WorkerThread *wt)

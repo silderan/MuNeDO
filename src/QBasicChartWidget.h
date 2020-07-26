@@ -312,7 +312,7 @@ public:
 	}
 	void addHost(const QLineConfig &lineConfig)				{ mChart->addLine(lineConfig);	}
 
-	void delHost(const QLineConfig &bglc);
+	void delHost(const QLineConfig &lineConfig);
 	void setInitialTime(const QDateTime &initialTime)			{ mChart->setInitialTime(initialTime);	}
 	// Set times to be shown in chart.
 	// If firstTime is invalid, it defaults to initialTime

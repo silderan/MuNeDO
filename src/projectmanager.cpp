@@ -115,6 +115,7 @@ bool ProjectManager::saveChartConfig(int chartID, const QChartConfig &chartConfi
 bool ProjectManager::loadChartConfig(int chartID, QChartConfig &chartConfig) const
 {
 	QIniData chartData;
+	chartConfig.mLines.clear();
 	if( QIniFile::load(projectChartsFileName(chartID), &chartData) )
 		return chartConfig.load(chartData);
 
