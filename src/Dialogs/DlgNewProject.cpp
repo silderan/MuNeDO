@@ -21,7 +21,7 @@
 **************************************************************************/
 
 #include "DlgNewProject.h"
-#include "ui_dlgnewtab.h"
+#include "ui_DlgNewProject.h"
 
 #include <QDir>
 #include <QMessageBox>
@@ -31,7 +31,7 @@
 
 DlgNewTab::DlgNewTab(const QStringList &openedProjectFolders, QWidget *parent)
 	: QDialog(parent)
-	, ui(new Ui::DlgNewTab)
+	, ui(new Ui::DlgNewProject)
 	, mOpenedProjectFolders(openedProjectFolders)
 {
 	ui->setupUi(this);

@@ -62,6 +62,11 @@ DlgEditPingChart::DlgEditPingChart(QChartConfig &chartConfig, QWidget *parent)
 		ui->chartID->setText(mChartConfig.mChartID);
 		ui->chartID->setEnabled(false);
 	}
+	else
+	{
+		ui->acceptButton->setDisabled(true);
+		connect( ui->chartID, &QLineEdit::textChanged, [this](const QString &txt) { ui->acceptButton->setDisabled(txt.isEmpty());} );
+	}
 	ui->chartName->setText(mChartConfig.mChartName);
 }
 
@@ -123,13 +128,16 @@ DlgEditPingChart::~DlgEditPingChart()
 
 void DlgEditPingChart::on_acceptButton_clicked()
 {
-	mChartConfig.mChartID = ui->chartID->text();
-	mChartConfig.mChartName = ui->chartName->text();
-	mChartConfig.mChartType = "ping";
-	mChartConfig.mLines.clear();
-	for( const DlgEditPingChart::_controlLine &ctrLine : mControlLines )
-		getLine(ctrLine);
-	accept();
+	if( !ui->chartID->text().isEmpty() )
+	{
+		mChartConfig.mChartID = ui->chartID->text();
+		mChartConfig.mChartName = ui->chartName->text();
+		mChartConfig.mChartType = "ping";
+		mChartConfig.mLines.clear();
+		for( const DlgEditPingChart::_controlLine &ctrLine : mControlLines )
+			getLine(ctrLine);
+		accept();
+	}
 }
 
 void DlgEditPingChart::on_removeChartButton_clicked()

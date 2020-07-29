@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>497</width>
-    <height>363</height>
+    <height>402</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -278,8 +278,8 @@
  <tabstops>
   <tabstop>chartName</tabstop>
   <tabstop>chartID</tabstop>
-  <tabstop>host1LineEdit</tabstop>
   <tabstop>name1LineEdit</tabstop>
+  <tabstop>host1LineEdit</tabstop>
   <tabstop>name2LineEdit</tabstop>
   <tabstop>host2LineEdit</tabstop>
   <tabstop>name3LineEdit</tabstop>

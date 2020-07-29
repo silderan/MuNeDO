@@ -28,13 +28,13 @@
 
 namespace Ui
 {
-	class DlgNewTab;
+	class DlgNewProject;
 }
 
 class DlgNewTab : public QDialog
 {
 	Q_OBJECT
-	Ui::DlgNewTab *ui;
+	Ui::DlgNewProject *ui;
 	QStringList mAllProjectFolders;
 	QStringList mOpenedProjectFolders;
 
