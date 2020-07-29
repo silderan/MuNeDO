@@ -25,10 +25,10 @@
 #include <QColorDialog>
 #include "Basic/Utils.h"
 
-DlgEditPingChart::DlgEditPingChart(QChartLineConfigList &chartLineConfigList, QWidget *parent)
+DlgEditPingChart::DlgEditPingChart(QChartConfig &chartConfig, QWidget *parent)
 	: QDialog(parent)
 	, ui(new Ui::DlgEditPingChart)
-	, mChartLineConfigList(chartLineConfigList)
+	, mChartConfig(chartConfig)
 	, mRemoveChart(false)
 {
 	ui->setupUi(this);
@@ -44,18 +44,25 @@ DlgEditPingChart::DlgEditPingChart(QChartLineConfigList &chartLineConfigList, QW
 	mControlLines.append( _controlLine(ui->host9Button, ui->id9LineEdit, ui->host9LineEdit, ui->name9LineEdit) );
 	mControlLines.append( _controlLine(ui->host10Button,ui->id10LineEdit,ui->host10LineEdit,ui->name10LineEdit) );
 
-	setupLine( mControlLines[0], mChartLineConfigList.count() > 0 ? &mChartLineConfigList.at(0) : Q_NULLPTR, Qt::red );
-	setupLine( mControlLines[1], mChartLineConfigList.count() > 1 ? &mChartLineConfigList.at(1) : Q_NULLPTR, Qt::green );
-	setupLine( mControlLines[2], mChartLineConfigList.count() > 2 ? &mChartLineConfigList.at(2) : Q_NULLPTR, Qt::blue );
-	setupLine( mControlLines[3], mChartLineConfigList.count() > 3 ? &mChartLineConfigList.at(3) : Q_NULLPTR, Qt::darkGray );
-	setupLine( mControlLines[4], mChartLineConfigList.count() > 4 ? &mChartLineConfigList.at(4) : Q_NULLPTR, Qt::cyan );
-	setupLine( mControlLines[5], mChartLineConfigList.count() > 5 ? &mChartLineConfigList.at(5) : Q_NULLPTR, Qt::magenta );
-	setupLine( mControlLines[6], mChartLineConfigList.count() > 6 ? &mChartLineConfigList.at(6) : Q_NULLPTR, Qt::yellow );
-	setupLine( mControlLines[7], mChartLineConfigList.count() > 7 ? &mChartLineConfigList.at(7) : Q_NULLPTR, Qt::darkRed );
-	setupLine( mControlLines[8], mChartLineConfigList.count() > 8 ? &mChartLineConfigList.at(8) : Q_NULLPTR, Qt::darkGreen );
-	setupLine( mControlLines[9], mChartLineConfigList.count() > 9 ? &mChartLineConfigList.at(9) : Q_NULLPTR, Qt::darkBlue );
+	setupLine( mControlLines[0], mChartConfig.mLines.count() > 0 ? &mChartConfig.mLines.at(0) : Q_NULLPTR, Qt::red );
+	setupLine( mControlLines[1], mChartConfig.mLines.count() > 1 ? &mChartConfig.mLines.at(1) : Q_NULLPTR, Qt::green );
+	setupLine( mControlLines[2], mChartConfig.mLines.count() > 2 ? &mChartConfig.mLines.at(2) : Q_NULLPTR, Qt::blue );
+	setupLine( mControlLines[3], mChartConfig.mLines.count() > 3 ? &mChartConfig.mLines.at(3) : Q_NULLPTR, Qt::darkGray );
+	setupLine( mControlLines[4], mChartConfig.mLines.count() > 4 ? &mChartConfig.mLines.at(4) : Q_NULLPTR, Qt::cyan );
+	setupLine( mControlLines[5], mChartConfig.mLines.count() > 5 ? &mChartConfig.mLines.at(5) : Q_NULLPTR, Qt::magenta );
+	setupLine( mControlLines[6], mChartConfig.mLines.count() > 6 ? &mChartConfig.mLines.at(6) : Q_NULLPTR, Qt::yellow );
+	setupLine( mControlLines[7], mChartConfig.mLines.count() > 7 ? &mChartConfig.mLines.at(7) : Q_NULLPTR, Qt::darkRed );
+	setupLine( mControlLines[8], mChartConfig.mLines.count() > 8 ? &mChartConfig.mLines.at(8) : Q_NULLPTR, Qt::darkGreen );
+	setupLine( mControlLines[9], mChartConfig.mLines.count() > 9 ? &mChartConfig.mLines.at(9) : Q_NULLPTR, Qt::darkBlue );
 
-	connect( ui->chartName, &QLineEdit::textChanged, [=](const QString &txt) {ui->chartID->setText(QString("chart_%1").arg(Utils::safeText(txt))); } );
+	connect( ui->chartName, &QLineEdit::textChanged, [=](const QString &txt) { if( ui->chartID->isEnabled() ) ui->chartID->setText(QString("%1").arg(Utils::safeText(txt))); } );
+
+	if( !mChartConfig.mChartID.isEmpty() )
+	{
+		ui->chartID->setText(mChartConfig.mChartID);
+		ui->chartID->setEnabled(false);
+	}
+	ui->chartName->setText(mChartConfig.mChartName);
 }
 
 
@@ -99,14 +106,14 @@ void DlgEditPingChart::setupLine(DlgEditPingChart::_controlLine &controlLine, co
 void DlgEditPingChart::getLine(const DlgEditPingChart::_controlLine &controlLine)
 {
 	if( !controlLine.label->text().isEmpty() && !controlLine.host->text().isEmpty() )
-		mChartLineConfigList.append(
-				QLineConfig( controlLine.id->text(),
-									  controlLine.label->text(),
-									  controlLine.host->text(),
-									  "ping",
-									  "",
-									  QStringList(),
-									  getButtonColor(controlLine.clr)) );
+		mChartConfig.mLines.append(
+			QLineConfig( controlLine.id->text(),
+						 controlLine.label->text(),
+						 controlLine.host->text(),
+						 "ping",
+						 "",
+						 QStringList(),
+						 getButtonColor(controlLine.clr)) );
 }
 
 DlgEditPingChart::~DlgEditPingChart()
@@ -116,7 +123,10 @@ DlgEditPingChart::~DlgEditPingChart()
 
 void DlgEditPingChart::on_acceptButton_clicked()
 {
-	mChartLineConfigList.clear();
+	mChartConfig.mChartID = ui->chartID->text();
+	mChartConfig.mChartName = ui->chartName->text();
+	mChartConfig.mChartType = "ping";
+	mChartConfig.mLines.clear();
 	for( const DlgEditPingChart::_controlLine &ctrLine : mControlLines )
 		getLine(ctrLine);
 	accept();

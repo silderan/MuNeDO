@@ -73,7 +73,10 @@ void QLineConfig::save(const QString &preKey, QIniData &iniData) const
 
 bool QChartConfig::load(const QIniData &data)
 {
-	mChartType = data["chartType"];
+	mChartType	= data["chartType"];
+	mChartID	= data["chartID"];
+	mChartName	= data["chartName"];
+
 	QLineConfig lineConfig;
 	for( int lineID = 0 ; lineConfig.load(QString("line_%1_").arg(lineID), data); ++lineID )
 		mLines.append(lineConfig);
@@ -82,11 +85,26 @@ bool QChartConfig::load(const QIniData &data)
 
 QIniData &QChartConfig::save(QIniData &data) const
 {
-	data["chartType"] = mChartType;
+	Q_ASSERT( !mChartID.isEmpty() );
+	Q_ASSERT( !mChartType.isEmpty() );
+
+	data["chartType"]	= mChartType;
+	data["chartID"]		= mChartID;
+	data["chartName"]	= mChartName;
+
 	int lineID = 0;
 	for( const QLineConfig &lineConfig : mLines )
 		lineConfig.save(QString("line_%1_").arg(lineID++), data);
+
 	return data;
+}
+
+bool QChartConfig::containsLine(const QString &lineID) const
+{
+	for( const QLineConfig &lineConfig : mLines )
+		if( lineConfig.mID == lineID )
+			return true;
+	return false;
 }
 
 QBasicChart::QBasicChart(const QString &chartType, QGraphicsItem *parent, Qt::WindowFlags wFlags)
@@ -100,7 +118,10 @@ QChartConfig QBasicChart::getChartConfig() const
 {
 	QChartConfig chartConfig;
 
-	chartConfig.mChartType = mChartType;
+	chartConfig.mChartType	= mChartType;
+	chartConfig.mChartID	= mChartID;
+	chartConfig.mChartName	= mChartName;
+
 	for( const QChartLine &line : lines )
 		chartConfig.mLines.append(line);
 

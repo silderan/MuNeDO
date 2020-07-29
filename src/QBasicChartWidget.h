@@ -134,9 +134,13 @@ struct QLineConfig
 struct QChartConfig
 {
 	QString mChartType;
+	QString mChartID;
+	QString mChartName;
 	QList<QLineConfig> mLines;
 	bool load(const QIniData &data);
 	QIniData &save(QIniData &data) const;
+
+	bool containsLine(const QString &lineID) const;
 };
 
 class QChartLineConfigList : public QList<QLineConfig>
@@ -241,6 +245,8 @@ class QBasicChart : public _qCharts
 {
 	QChartLineList lines;
 	QString mChartType;
+	QString mChartID;
+	QString mChartName;
 	QDateTime mInitialTime;	// Initial Time for x axis.
 	QDateTime leftLimit;	// Right limit for x axis.
 	QDateTime rightLimit;	// Right limit for x axis.
@@ -258,6 +264,11 @@ public:
 	QChartLineList &chartLines()				{ return lines;	}
 	int linesCount() const				{ return lines.count();	}
 	const QString &chartType() const	{ return mChartType;	}
+	const QString &chartID() const		{ return mChartID;		}
+	// For now, cannot change ID as its used in many places, like directory where chart data is stored
+	void setChartID(const QString &id)	{ Q_ASSERT( mChartID.isEmpty() || (mChartID == id) ); mChartID = id;		}
+	const QString &chartName() const	{ return mChartName;	}
+	void setChartName(const QString &n)	{ mChartName = n;		}
 
 	QChartConfig getChartConfig() const;
 
@@ -312,6 +323,12 @@ public:
 
 	const QChartLineList &chartLines() const	{ return mChart->chartLines();	}
 	QChartLineList &chartLines()				{ return mChart->chartLines();	}
+
+	QString chartID() const						{ return mChart->chartID();		}
+	void setChartID(const QString &id)			{ mChart->setChartID(id);		}
+
+	QString chartName() const					{ return mChart->chartName();	}
+	void setChartName(const QString &name)		{ mChart->setChartName(name);	}
 
 	int linesCount() const						{ return mChart->linesCount();	}
 

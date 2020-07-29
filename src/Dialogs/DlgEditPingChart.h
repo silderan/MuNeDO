@@ -41,7 +41,7 @@ class DlgEditPingChart : public QDialog
 Q_OBJECT
 
 	Ui::DlgEditPingChart *ui;
-	QChartLineConfigList &mChartLineConfigList;
+	QChartConfig &mChartConfig;
 
 	bool mRemoveChart;
 
@@ -72,8 +72,9 @@ Q_OBJECT
 
 	void setupLine(_controlLine &controlLine, const QLineConfig *lineConfig, const QColor &defaultClr);
 	void getLine(const _controlLine &controlLine);
+
 public:
-	explicit DlgEditPingChart(QChartLineConfigList &chartLineConfigList, QWidget *parent);
+	explicit DlgEditPingChart(QChartConfig &chartConfig, QWidget *parent);
 	~DlgEditPingChart();
 	bool removeChart() const	{ return mRemoveChart;	}
 

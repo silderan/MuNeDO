@@ -56,7 +56,7 @@ Q_OBJECT
 
 	void leftLimitChanged(int newVal);
 
-	QBasicChartWidget *addChart(QBasicChartWidget *chartWidget);
+	QBasicChartWidget *addChart(const QChartConfig &chartConfig, QBasicChartWidget *chartWidget);
 
 public:
 	QTabChartHolder(QWidget *papi = nullptr);
@@ -71,7 +71,7 @@ public:
 
 	void saveSeries() const;
 	void loadSeries();
-	QPingChartWidget *addPingChart(bool save = true);
+	QPingChartWidget *addPingChart(const QChartConfig &chartConfig, bool save = true);
 	void editChart(QBasicChartWidget *chartWidget);
 	void removeChart(QBasicChartWidget *chartWidget, bool save = true);
 	void play();

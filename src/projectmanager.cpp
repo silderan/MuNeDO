@@ -24,6 +24,7 @@
 
 #include <QObject>
 #include <QDir>
+#include <QDebug>
 
 #include "Basic/QIniFile.h"
 #include "QBasicChartWidget.h"
@@ -100,29 +101,65 @@ ProjectManager::ProjectManager_ErrorCode ProjectManager::saveProject() const
 	return ProjectManager_ErrorCode::NoError;
 }
 
-bool ProjectManager::saveChartConfig(int chartID, const QChartConfig &chartConfig) const
+QList<QChartConfig> ProjectManager::loadCharts()
+{
+	QDir dir(projectChartsFolder());
+	QList<QChartConfig> chartConfigList;
+	QChartConfig chartConfig;
+
+	for( const QString &chartID : dir.entryList() )
+	{
+		if( loadChartConfig(chartID, chartConfig) )
+			chartConfigList.append(chartConfig);
+		else
+			qDebug() << QString("Chart dir %1/%2 does not contain a valid chart").arg(projectChartsFolder()).arg(chartID);
+	}
+	return chartConfigList;
+}
+
+void ProjectManager::saveCharts(const QList<QChartConfig> &chartConfigList)
+{
+	for( const QChartConfig &chartConfig : chartConfigList )
+		if( !saveChartConfig(chartConfig) )
+			qDebug() << QString("Chart config %1/%2 cannot been saved").arg(projectChartsFolder()).arg(chartConfig.mChartID);
+}
+
+bool ProjectManager::saveChartConfig(const QChartConfig &chartConfig) const
 {
 	QDir dir;
-	QString newFolder = projectChartsFolder(chartID);
+	QString newFolder = projectChartFolder(chartConfig.mChartID);
 	dir.mkpath(newFolder);
 
 	QIniData chartData;
 	chartConfig.save(chartData);
 
-	return QIniFile::save(projectChartsFileName(chartID), chartData);
+	return QIniFile::save(projectChartsFileName(chartConfig.mChartID), chartData);
 }
 
-bool ProjectManager::loadChartConfig(int chartID, QChartConfig &chartConfig) const
+bool ProjectManager::loadChartConfig(const QString &chartID, QChartConfig &chartConfig) const
 {
 	QIniData chartData;
 	chartConfig.mLines.clear();
 	if( QIniFile::load(projectChartsFileName(chartID), &chartData) )
-		return chartConfig.load(chartData);
+	{
+		if( chartConfig.load(chartData) )
+		{
+			if( chartConfig.mChartID.isEmpty() )
+				chartConfig.mChartID = chartID;
+			if( chartConfig.mChartName.isEmpty() )
+				chartConfig.mChartName = chartID;
+			return true;
+		}
+		else
+			qDebug() << QString("Data loaded from %1 is not a valid chartConfig data").arg(projectChartFolder(chartID));
+	}
+	else
+		qDebug() << QString("Data from %1 cannot been loaded ").arg(projectChartFolder(chartID));
 
 	return false;
 }
 
-bool ProjectManager::saveLineSeries(int chartID, const QString &lineID, const QByteArray &series) const
+bool ProjectManager::saveLineSeries(const QString &chartID, const QString &lineID, const QByteArray &series) const
 {
 	QFile f(projectSeriesFileName(chartID, lineID));
 	if( f.open(QIODevice::WriteOnly) )
@@ -133,7 +170,7 @@ bool ProjectManager::saveLineSeries(int chartID, const QString &lineID, const QB
 	return false;
 }
 
-QByteArray ProjectManager::loadLineSeries(int chartID, const QString &lineID) const
+QByteArray ProjectManager::loadLineSeries(const QString &chartID, const QString &lineID) const
 {
 	QFile f(projectSeriesFileName(chartID, lineID));
 	if( f.open(QIODevice::ReadOnly) )

@@ -87,23 +87,23 @@ ProjectManager::ProjectManager_ErrorCode QTabChartHolder::loadProject(const QStr
 
 void QTabChartHolder::editChart(QBasicChartWidget *chartWidget)
 {
-	QChartLineConfigList newList;
+	QChartConfig newChrtCnfg = chartWidget->getChartConfig();
 
-	for( const QChartLine &line : chartWidget->chartLines() )
-		newList.append(line);
-
-	DlgEditPingChart dlg(newList , this);
+	DlgEditPingChart dlg(newChrtCnfg , this);
 	if( dlg.exec() )
 	{
 		if( dlg.removeChart() )
 			removeChart(chartWidget);
 		else
 		{
+			chartWidget->setChartID(newChrtCnfg.mChartID);
+			chartWidget->setChartName(newChrtCnfg.mChartName);
+
 			for( const QChartLine &oldLine : chartWidget->chartLines() )
-				if( !newList.contains(oldLine.mID) )
+				if( !newChrtCnfg.containsLine(oldLine.mID) )
 					chartWidget->delHost(oldLine);
 
-			for( QLineConfig &host : newList  )
+			for( const QLineConfig &host : newChrtCnfg.mLines  )
 				chartWidget->addHost(host, false);
 		}
 		saveCharts();
@@ -112,24 +112,19 @@ void QTabChartHolder::editChart(QBasicChartWidget *chartWidget)
 
 void QTabChartHolder::saveCharts() const
 {
-	for( int chartID = 0; chartID < mChartList.count(); ++chartID )
+	for( const QBasicChartWidget *chart : mChartList )
 	{
-		QChartConfig chartConfig = mChartList.at(chartID)->getChartConfig();
-		mProjectManager.saveChartConfig(chartID, chartConfig);
+		QChartConfig chartConfig = chart->getChartConfig();
+		mProjectManager.saveChartConfig(chartConfig);
 	}
 }
 
 void QTabChartHolder::loadCharts()
 {
-	QChartConfig chartConfig;
-	for( int chartID = 0; mProjectManager.loadChartConfig(chartID, chartConfig); ++chartID )
+	for( const QChartConfig &chartConfig : mProjectManager.loadCharts() )
 	{
 		if( chartConfig.mChartType == "ping" )
-		{
-			QBasicChartWidget *chartWidget = addPingChart(false);
-			for( const QLineConfig &lineConfig : chartConfig.mLines )
-				chartWidget->addHost(lineConfig, false);
-		}
+			addPingChart(chartConfig, false);
 		else
 			qDebug() << "Chart type " << chartConfig.mChartType << " unknown. Maybe it's for a future version";
 	}
@@ -137,42 +132,44 @@ void QTabChartHolder::loadCharts()
 
 void QTabChartHolder::saveSeries() const
 {
-	for( int chartID = 0; chartID < mChartList.count(); ++chartID )
+	for( const QBasicChartWidget *chart : mChartList )
 	{
-		for( const QChartLine &line : mChartList.at(chartID)->chartLines() )
+		for( const QChartLine &line : chart->chartLines() )
 		{
-			mProjectManager.saveLineSeries(chartID, line.mID, line.saveSeries());
+			mProjectManager.saveLineSeries(chart->chartID(), line.mID, line.saveSeries());
 		}
 	}
 }
 
 void QTabChartHolder::loadSeries()
 {
-	for( int chartID = 0; chartID < mChartList.count(); ++chartID )
+	for( QBasicChartWidget *chart : mChartList )
 	{
 		long long maxX = 0;
 		long long maxY = 0;
 		long long minX = 0;
-		for( QChartLine &line : mChartList.at(chartID)->chartLines() )
+		for( QChartLine &line : chart->chartLines() )
 		{
 			if( !line.mIsOld )
 			{
-				mChartList.at(chartID)->addHost(line, true)
-				.loadSeries( mProjectManager.loadLineSeries(chartID, line.mID), maxY, maxX, minX );
+				chart->addHost(line, true)
+				.loadSeries( mProjectManager.loadLineSeries(chart->chartID(), line.mID), maxY, maxX, minX );
 			}
 		}
 		if( maxX == minX )
 			maxX+= 1000;
-		mChartList.at(chartID)->setInitialTime( mInitialTime = QDateTime::fromMSecsSinceEpoch(minX) );
-		mChartList.at(chartID)->setMaxY(maxY);
+		chart->setInitialTime( mInitialTime = QDateTime::fromMSecsSinceEpoch(minX) );
+		chart->setMaxY(maxY);
 	}
 }
 
-QBasicChartWidget *QTabChartHolder::addChart(QBasicChartWidget *chartWidget)
+QBasicChartWidget *QTabChartHolder::addChart(const QChartConfig &chartConfig, QBasicChartWidget *chartWidget)
 {
 	chartWidget->setMinimumHeight(200);
 	verticalLayout->addWidget(chartWidget);
 	mChartList.append(chartWidget);
+	chartWidget->setChartID(chartConfig.mChartID);
+	chartWidget->setChartName(chartConfig.mChartName);
 
 	chartWidget->setInitialTime(mInitialTime);
 	chartWidget->setTimeRange(mLeftTime, mRightTime);
@@ -180,11 +177,14 @@ QBasicChartWidget *QTabChartHolder::addChart(QBasicChartWidget *chartWidget)
 	return chartWidget;
 }
 
-QPingChartWidget *QTabChartHolder::addPingChart(bool save)
+QPingChartWidget *QTabChartHolder::addPingChart(const QChartConfig &chartConfig, bool save)
 {
 	QPingChartWidget *chartWidget = new QPingChartWidget(this);
 	chartWidget->setObjectName(QString::fromUtf8("PingChart"));
-	addChart(static_cast<QBasicChartWidget*>(chartWidget));
+	addChart(chartConfig, static_cast<QBasicChartWidget*>(chartWidget));
+
+	for( const QLineConfig &lineConfig : chartConfig.mLines )
+		chartWidget->addHost(lineConfig, false);
 
 	if( save )
 		saveCharts();

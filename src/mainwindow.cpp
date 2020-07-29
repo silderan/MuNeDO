@@ -69,7 +69,7 @@ void MainWindow::on_addProjectAction_triggered()
 void MainWindow::on_addChartAction_triggered()
 {
 	if( QTabChartHolder *tab = static_cast<QTabChartHolder*>(ui->tabWidget->currentWidget()) )
-		tab->editChart(tab->addPingChart(false));
+		tab->editChart( tab->addPingChart(QChartConfig(), false) );
 	else
 		qDebug() << "currentTabWidget() is not a QTabChartHolder instance";
 }

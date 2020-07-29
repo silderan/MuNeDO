@@ -59,9 +59,10 @@ private:
 
 	QString projectPathFolder() const		{ return QString("%1/%2").arg(projectsRootFolder()).arg(projectFolder());	}
 	QString projectDataFileName() const		{ return QString("%1/%2").arg(projectPathFolder()).arg(PROJECT_DATA_FNAME);	}
-	QString projectChartsFolder(int chartID) const		{ return QString("%1/chart_%2").arg(projectPathFolder()).arg(chartID);	}
-	QString projectChartsFileName(int chartID) const	{ return QString("%1/chart_%2/%3").arg(projectPathFolder()).arg(chartID).arg(PROJECT_CHARTS_FNAME);	}
-	QString projectSeriesFileName(int chartID, const QString &lineID) const	{ return QString("%1/chart_%2/%3.series").arg(projectPathFolder()).arg(chartID).arg(lineID); }
+	QString projectChartsFolder() const		{ return projectPathFolder();	}
+	QString projectChartFolder(const QString &chartID) const		{ return QString("%1/%2").arg(projectPathFolder()).arg(chartID);	}
+	QString projectChartsFileName(const QString &chartID) const	{ return QString("%1/%2/%3").arg(projectPathFolder()).arg(chartID).arg(PROJECT_CHARTS_FNAME);	}
+	QString projectSeriesFileName(const QString &chartID, const QString &lineID) const	{ return QString("%1/%2/%3.series").arg(projectPathFolder()).arg(chartID).arg(lineID); }
 
 public:
 	ProjectManager(const QString &name, const QString &folder, const QString &description = QString());
@@ -80,10 +81,12 @@ public:
 	ProjectManager_ErrorCode loadProject(const QString &folder);
 	ProjectManager_ErrorCode loadProject();
 	ProjectManager_ErrorCode saveProject() const;
-	bool saveChartConfig(int chartID, const QChartConfig &chartConfig) const;
-	bool loadChartConfig(int chartID, QChartConfig &chartConfig) const;
-	bool saveLineSeries(int chartID, const QString &lineID, const QByteArray &series) const;
-	QByteArray loadLineSeries(int chartID, const QString &lineID) const;
+	QList<QChartConfig> loadCharts();
+	void saveCharts(const QList<QChartConfig> &chartConfigList);
+	bool saveChartConfig(const QChartConfig &chartConfig) const;
+	bool loadChartConfig(const QString &chartID, QChartConfig &chartConfig) const;
+	bool saveLineSeries(const QString &chartID, const QString &lineID, const QByteArray &series) const;
+	QByteArray loadLineSeries(const QString &chartID, const QString &lineID) const;
 	ProjectManager_ErrorCode deleteProject();
 };
 
