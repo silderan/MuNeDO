@@ -86,6 +86,7 @@ struct QLineConfig
 	QString mRequestValue;
 	QStringList mRequestParameters;
 	QColor mLineColor;
+	bool mIsOld;
 	QLineConfig(){}
 	QLineConfig(const QLineConfig &other)
 		: mID(other.mID)
@@ -95,6 +96,7 @@ struct QLineConfig
 		, mRequestValue(other.mRequestValue)
 		, mRequestParameters(other.mRequestParameters)
 		, mLineColor(other.mLineColor)
+		, mIsOld(false)
 	{	}
 	QLineConfig(const QString &id,
 						 const QString &label,
@@ -110,6 +112,7 @@ struct QLineConfig
 		, mRequestValue(requestValue)
 		, mRequestParameters(requestParameters)
 		, mLineColor(clr)
+		, mIsOld(false)
 	{	}
 	bool operator==(const QLineConfig &other)	{ return (mID == other.mID); }
 	QLineConfig &operator=(const QLineConfig &other)
@@ -121,6 +124,7 @@ struct QLineConfig
 		mRequestValue = other.mRequestValue;
 		mRequestParameters = other.mRequestParameters;
 		mLineColor = other.mLineColor;
+		mIsOld = other.mIsOld;
 		return *this;
 	}
 	bool load(const QString &preKey, const QIniData &data);
@@ -135,7 +139,7 @@ struct QChartConfig
 	QIniData &save(QIniData &data) const;
 };
 
-class QBasicChartLineConfigList : public QList<QLineConfig>
+class QChartLineConfigList : public QList<QLineConfig>
 {
 public:
 	bool contains(const QString &label) const
@@ -189,6 +193,8 @@ struct QChartLine : public QLineConfig
 	}
 	void setLabel(const QString label)		{ series->setName(mLabel = label);	}
 
+	QByteArray saveSeries() const;
+	void loadSeries(const QByteArray &data, long long &maxY, long long &maxX, long long &minX);
 	bool isValid() const	{ return !mLabel.isEmpty();	}
 };
 
@@ -249,6 +255,7 @@ public:
 	explicit QBasicChart(const QString &chartType, QGraphicsItem *parent = Q_NULLPTR, Qt::WindowFlags wFlags = Qt::Widget);
 
 	const QChartLineList &chartLines() const	{ return lines;	}
+	QChartLineList &chartLines()				{ return lines;	}
 	int linesCount() const				{ return lines.count();	}
 	const QString &chartType() const	{ return mChartType;	}
 
@@ -260,11 +267,11 @@ public:
 				   const QString &requestType,
 				   const QString &requestValue,
 				   const QStringList &requestParameters,
-				   const QColor &clr)
+				   const QColor &clr, bool isOld)
 	{
-		return addLine( QLineConfig(id, label, remoteHost, requestType, requestValue, requestParameters, clr) );
+		return addLine( QLineConfig(id, label, remoteHost, requestType, requestValue, requestParameters, clr), isOld );
 	}
-	QChartLine &addLine(const QLineConfig &lineConfig);
+	QChartLine &addLine(const QLineConfig &lineConfig, bool isOld);
 	void delLine(const QLineConfig &lineConfig);
 
 	void addValue(const QString &lineID, unsigned long value);
@@ -275,6 +282,7 @@ public:
 	// If firstTime is invalid, it defaults to initialTime
 	// If lastTime is invalid, it defaults to currentTime.
 	void setTimes(const QDateTime &firstTime, const QDateTime &lastTime);
+	void setMaxY(long long maxY);
 };
 
 class QTabChartHolder;
@@ -303,21 +311,24 @@ public:
 	const QTabChartHolder *chartHolder() const	{ return mChartHolder;	}
 
 	const QChartLineList &chartLines() const	{ return mChart->chartLines();	}
+	QChartLineList &chartLines()				{ return mChart->chartLines();	}
+
 	int linesCount() const						{ return mChart->linesCount();	}
 
-	void addHost(const QString &id, const QString &label, const QString &remoteHost,const QString &requestType,
-				 const QString &requestValue,const QStringList &requestParameters, const QColor &clr)
+	QChartLine &addHost(const QString &id, const QString &label, const QString &remoteHost,const QString &requestType,
+				 const QString &requestValue,const QStringList &requestParameters, const QColor &clr, bool isOld)
 	{
-		mChart->addLine(id, label, remoteHost, requestType, requestValue, requestParameters, clr);
+		return mChart->addLine(id, label, remoteHost, requestType, requestValue, requestParameters, clr, isOld);
 	}
-	void addHost(const QLineConfig &lineConfig)				{ mChart->addLine(lineConfig);	}
+	QChartLine &addHost(const QLineConfig &lineConfig, bool isOld)				{ return mChart->addLine(lineConfig, isOld);	}
 
 	void delHost(const QLineConfig &lineConfig);
-	void setInitialTime(const QDateTime &initialTime)			{ mChart->setInitialTime(initialTime);	}
+	void setInitialTime(const QDateTime &initialTime)				{ mChart->setInitialTime(initialTime);	}
 	// Set times to be shown in chart.
 	// If firstTime is invalid, it defaults to initialTime
 	// If lastTime is invalid, it defaults to currentTime.
 	void setTimeRange(const QDateTime &firstTime, const QDateTime &lastTime)	{ mChart->setTimes(firstTime, lastTime);	}
+	void setMaxY(long long maxY)												{ mChart->setMaxY(maxY);	}
 
 	virtual void addValue(const QString &id, unsigned long value)				{ return chart()->addValue(id, value);}
 	virtual void on_ResultReady(WorkerThread *wt);

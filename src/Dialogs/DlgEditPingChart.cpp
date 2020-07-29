@@ -23,8 +23,9 @@
 #include "ui_DlgEditPingChart.h"
 
 #include <QColorDialog>
+#include "Basic/Utils.h"
 
-DlgEditPingChart::DlgEditPingChart(QBasicChartLineConfigList &chartLineConfigList, QWidget *parent)
+DlgEditPingChart::DlgEditPingChart(QChartLineConfigList &chartLineConfigList, QWidget *parent)
 	: QDialog(parent)
 	, ui(new Ui::DlgEditPingChart)
 	, mChartLineConfigList(chartLineConfigList)
@@ -53,6 +54,8 @@ DlgEditPingChart::DlgEditPingChart(QBasicChartLineConfigList &chartLineConfigLis
 	setupLine( mControlLines[7], mChartLineConfigList.count() > 7 ? &mChartLineConfigList.at(7) : Q_NULLPTR, Qt::darkRed );
 	setupLine( mControlLines[8], mChartLineConfigList.count() > 8 ? &mChartLineConfigList.at(8) : Q_NULLPTR, Qt::darkGreen );
 	setupLine( mControlLines[9], mChartLineConfigList.count() > 9 ? &mChartLineConfigList.at(9) : Q_NULLPTR, Qt::darkBlue );
+
+	connect( ui->chartName, &QLineEdit::textChanged, [=](const QString &txt) {ui->chartID->setText(QString("chart_%1").arg(Utils::safeText(txt))); } );
 }
 
 
@@ -90,7 +93,7 @@ void DlgEditPingChart::setupLine(DlgEditPingChart::_controlLine &controlLine, co
 		setButtonColor(controlLine.clr, defaultClr);
 
 	connect( controlLine.clr, &QToolButton::clicked, this, &DlgEditPingChart::chooseColor );
-	connect( controlLine.label, &QLineEdit::textChanged, [=](const QString &txt) { controlLine.id->setText(QString("id_%1").arg(txt));} );
+	connect( controlLine.label, &QLineEdit::textChanged, [=](const QString &txt) { controlLine.id->setText(QString("id_%1").arg(Utils::safeText(txt)));} );
 }
 
 void DlgEditPingChart::getLine(const DlgEditPingChart::_controlLine &controlLine)

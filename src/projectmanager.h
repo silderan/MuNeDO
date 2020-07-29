@@ -29,7 +29,7 @@
 #define PROJECT_DATA_FNAME "project.data"
 #define PROJECT_CHARTS_FNAME "charts.data"
 
-class QBasicChartLineConfigList;
+class QChartLineConfigList;
 class QBasicChartWidget;
 class QBasicChart;
 class QChartConfig;
@@ -61,6 +61,7 @@ private:
 	QString projectDataFileName() const		{ return QString("%1/%2").arg(projectPathFolder()).arg(PROJECT_DATA_FNAME);	}
 	QString projectChartsFolder(int chartID) const		{ return QString("%1/chart_%2").arg(projectPathFolder()).arg(chartID);	}
 	QString projectChartsFileName(int chartID) const	{ return QString("%1/chart_%2/%3").arg(projectPathFolder()).arg(chartID).arg(PROJECT_CHARTS_FNAME);	}
+	QString projectSeriesFileName(int chartID, const QString &lineID) const	{ return QString("%1/chart_%2/%3.series").arg(projectPathFolder()).arg(chartID).arg(lineID); }
 
 public:
 	ProjectManager(const QString &name, const QString &folder, const QString &description = QString());
@@ -74,13 +75,15 @@ public:
 	static QStringList allProjectFolders();
 	ProjectManager_ErrorCode createNewProject();
 
-	const QString &lastErrorText()const	{ return mLastErrorText;	}
+	const QString &lastErrorText() const	{ return mLastErrorText;	}
 
 	ProjectManager_ErrorCode loadProject(const QString &folder);
 	ProjectManager_ErrorCode loadProject();
 	ProjectManager_ErrorCode saveProject() const;
 	bool saveChartConfig(int chartID, const QChartConfig &chartConfig) const;
 	bool loadChartConfig(int chartID, QChartConfig &chartConfig) const;
+	bool saveLineSeries(int chartID, const QString &lineID, const QByteArray &series) const;
+	QByteArray loadLineSeries(int chartID, const QString &lineID) const;
 	ProjectManager_ErrorCode deleteProject();
 };
 

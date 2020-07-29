@@ -122,6 +122,25 @@ bool ProjectManager::loadChartConfig(int chartID, QChartConfig &chartConfig) con
 	return false;
 }
 
+bool ProjectManager::saveLineSeries(int chartID, const QString &lineID, const QByteArray &series) const
+{
+	QFile f(projectSeriesFileName(chartID, lineID));
+	if( f.open(QIODevice::WriteOnly) )
+	{
+		f.write(series);
+		return true;
+	}
+	return false;
+}
+
+QByteArray ProjectManager::loadLineSeries(int chartID, const QString &lineID) const
+{
+	QFile f(projectSeriesFileName(chartID, lineID));
+	if( f.open(QIODevice::ReadOnly) )
+		return f.readAll();
+	return QByteArray();
+}
+
 ProjectManager::ProjectManager_ErrorCode ProjectManager::deleteProject()
 {
 	QDir dir(projectPathFolder());

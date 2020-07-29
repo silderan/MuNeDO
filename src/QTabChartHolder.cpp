@@ -80,13 +80,14 @@ ProjectManager::ProjectManager_ErrorCode QTabChartHolder::loadProject(const QStr
 		gridLayout_2->addWidget(playButton, 1, 1, 1, 1);
 
 		loadCharts();
+//		loadSeries();
 	}
 	return err;
 }
 
 void QTabChartHolder::editChart(QBasicChartWidget *chartWidget)
 {
-	QBasicChartLineConfigList newList;
+	QChartLineConfigList newList;
 
 	for( const QChartLine &line : chartWidget->chartLines() )
 		newList.append(line);
@@ -103,7 +104,7 @@ void QTabChartHolder::editChart(QBasicChartWidget *chartWidget)
 					chartWidget->delHost(oldLine);
 
 			for( QLineConfig &host : newList  )
-				chartWidget->addHost(host);
+				chartWidget->addHost(host, false);
 		}
 		saveCharts();
 	}
@@ -127,10 +128,43 @@ void QTabChartHolder::loadCharts()
 		{
 			QBasicChartWidget *chartWidget = addPingChart(false);
 			for( const QLineConfig &lineConfig : chartConfig.mLines )
-				chartWidget->addHost(lineConfig);
+				chartWidget->addHost(lineConfig, false);
 		}
 		else
 			qDebug() << "Chart type " << chartConfig.mChartType << " unknown. Maybe it's for a future version";
+	}
+}
+
+void QTabChartHolder::saveSeries() const
+{
+	for( int chartID = 0; chartID < mChartList.count(); ++chartID )
+	{
+		for( const QChartLine &line : mChartList.at(chartID)->chartLines() )
+		{
+			mProjectManager.saveLineSeries(chartID, line.mID, line.saveSeries());
+		}
+	}
+}
+
+void QTabChartHolder::loadSeries()
+{
+	for( int chartID = 0; chartID < mChartList.count(); ++chartID )
+	{
+		long long maxX = 0;
+		long long maxY = 0;
+		long long minX = 0;
+		for( QChartLine &line : mChartList.at(chartID)->chartLines() )
+		{
+			if( !line.mIsOld )
+			{
+				mChartList.at(chartID)->addHost(line, true)
+				.loadSeries( mProjectManager.loadLineSeries(chartID, line.mID), maxY, maxX, minX );
+			}
+		}
+		if( maxX == minX )
+			maxX+= 1000;
+		mChartList.at(chartID)->setInitialTime( mInitialTime = QDateTime::fromMSecsSinceEpoch(minX) );
+		mChartList.at(chartID)->setMaxY(maxY);
 	}
 }
 

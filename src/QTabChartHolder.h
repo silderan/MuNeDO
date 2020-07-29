@@ -69,6 +69,8 @@ public:
 	void saveCharts() const;
 	void loadCharts();
 
+	void saveSeries() const;
+	void loadSeries();
 	QPingChartWidget *addPingChart(bool save = true);
 	void editChart(QBasicChartWidget *chartWidget);
 	void removeChart(QBasicChartWidget *chartWidget, bool save = true);

@@ -67,8 +67,8 @@ void QLineConfig::save(const QString &preKey, QIniData &iniData) const
 	iniData[QString("%1value").arg(preKey)]		= mRequestValue;
 	iniData[QString("%1params").arg(preKey)]	= mRequestParameters.join(",");
 	iniData[QString("%1color").arg(preKey)]		= QString("%1:%2:%3").arg(mLineColor.red())
-																				 .arg(mLineColor.green())
-																				 .arg(mLineColor.blue());
+																	 .arg(mLineColor.green())
+																	 .arg(mLineColor.blue());
 }
 
 bool QChartConfig::load(const QIniData &data)
@@ -107,51 +107,55 @@ QChartConfig QBasicChart::getChartConfig() const
 	return chartConfig;
 }
 
-QChartLine &QBasicChart::addLine(const QLineConfig &lineConfig)
+QChartLine &QBasicChart::addLine(const QLineConfig &lineConfig, bool isOld)
 {
-	QChartLine &line = lines[lineConfig.mID];
-	if( line.isValid() )
+	if( !isOld )
 	{
-		line.changeColor(lineConfig.mLineColor);
-		line.setLabel(lineConfig.mLabel);
-		return line;
-	}
-	else
-	{
-		lines.append(QChartLine(lineConfig));
-		QChartLine &line = lines.last();
-
-		line = lineConfig;
-		line.series = new _qLineSeries();
-		line.axisX = new _qTimeAxis();
-		line.axisY = new _qValueAxis();
-
-		line.axisX->setTickCount(1);
-		line.axisX->setFormat("dd/MM/yy hh:mm:ss");
-		line.axisY->setLabelFormat("%ims");
-
-		addSeries(line.series);
-
-		addAxis(line.axisX, Qt::AlignBottom);
-		addAxis(line.axisY, Qt::AlignLeft);
-
-		line.series->attachAxis(line.axisX);
-		line.series->attachAxis(line.axisY);
-
-		line.setLabel(line.mLabel);
-		line.changeColor(line.mLineColor);
-
-		line.axisX->setRange( leftLimit.isValid() ? leftLimit : mInitialTime.isValid() ? mInitialTime : QDateTime::currentDateTime(),
-							  rightLimit.isValid() ? rightLimit : QDateTime::currentDateTime().addMSecs(1) );
-
-		// If it's the first line, it must be visible. The other ones muy be hiden.
-		if( lines.count() != 1 )
+		QChartLine &line = lines[lineConfig.mID];
+		if( line.isValid() && !lineConfig.mIsOld )
 		{
-			line.axisY->hide();
-			line.axisX->hide();
+			line.changeColor(lineConfig.mLineColor);
+			line.setLabel(lineConfig.mLabel);
+			return line;
 		}
-		return line;
 	}
+	lines.append(QChartLine(lineConfig));
+	QChartLine &line = lines.last();
+	if( (line.mIsOld = isOld) )
+	{
+		line.mID += "_old";
+	}
+
+	line = lineConfig;
+	line.series = new _qLineSeries();
+	line.axisX = new _qTimeAxis();
+	line.axisY = new _qValueAxis();
+
+	line.axisX->setTickCount(1);
+	line.axisX->setFormat("dd/MM/yy hh:mm:ss");
+	line.axisY->setLabelFormat("%ims");
+
+	addSeries(line.series);
+
+	addAxis(line.axisX, Qt::AlignBottom);
+	addAxis(line.axisY, Qt::AlignLeft);
+
+	line.series->attachAxis(line.axisX);
+	line.series->attachAxis(line.axisY);
+
+	line.setLabel(line.mLabel);
+	line.changeColor(line.mLineColor);
+
+	line.axisX->setRange( leftLimit.isValid() ? leftLimit : mInitialTime.isValid() ? mInitialTime : QDateTime::currentDateTime(),
+						  rightLimit.isValid() ? rightLimit : QDateTime::currentDateTime().addMSecs(1) );
+
+	// If it's the first line, it must be visible. The other ones must be hiden.
+	if( lines.count() != 1 )
+	{
+		line.axisY->hide();
+		line.axisX->hide();
+	}
+	return line;
 }
 
 void QBasicChart::delLine(const QLineConfig &lineConfig)
@@ -238,9 +242,13 @@ void QBasicChart::addValue(const QString &lineID, unsigned long value)
 
 void QBasicChart::setInitialTime(const QDateTime &initialTime)
 {
-	mInitialTime = initialTime;
-	for( QChartLine &line : lines )
-		line.axisX->setMin(initialTime);
+	if( mInitialTime != initialTime )
+	{
+		mInitialTime = initialTime;
+		Q_ASSERT(mInitialTime.isValid());
+		for( QChartLine &line : lines )
+			line.axisX->setMin(initialTime);
+	}
 }
 
 void QBasicChart::setTimes(const QDateTime &firstTime, const QDateTime &lastTime)
@@ -250,6 +258,12 @@ void QBasicChart::setTimes(const QDateTime &firstTime, const QDateTime &lastTime
 
 	for( QChartLine &line : lines )
 		line.axisX->setRange( leftLimit, rightLimit.isValid() ? rightLimit : QDateTime::currentDateTime() );
+}
+
+void QBasicChart::setMaxY(long long maxY)
+{
+	for( QChartLine &line : lines )
+		line.axisY->setMax(maxY);
 }
 
 QBasicChartWidget::QBasicChartWidget(QTabChartHolder *chartHolder, const QString &chartType)
@@ -282,10 +296,13 @@ void QBasicChartWidget::heartbeat()
 {
 	for( const QChartLine &line : chartLines() )
 	{
-		WorkerThread *wt = getFreeThread();
-		wt->setHostname( line.mRemoteHost );
-		wt->setID( line.mID );
-		wt->start();
+		if( !line.mIsOld )
+		{
+			WorkerThread *wt = getFreeThread();
+			wt->setHostname( line.mRemoteHost );
+			wt->setID( line.mID );
+			wt->start();
+		}
 	}
 }
 
@@ -299,3 +316,108 @@ void QBasicChartWidget::on_ResultReady(WorkerThread *wt)
 	addValue( wt->id(), wt->resultData().toUInt() );
 }
 
+char toHexChar(char i)
+{
+	const char *converter = "0123456789ABCDEF";
+	return converter[i&0xF];
+}
+
+void toHexChar(long long value, QByteArray &out)
+{
+	int ini = out.count();
+	while( value )
+	{
+		out.append( toHexChar(static_cast<char>(value)) );
+		value >>= 4;
+	}
+	// Reverse chars.
+	for( int fin = out.count()-1; ini < fin; ini++, fin-- )
+	{
+		char tmp = out[ini];
+		out[ini] = out[fin];
+		out[fin] = tmp;
+	}
+}
+
+char fromHex(char c)
+{
+	return (c <= '9') ? (c - '0') : (c - 'A' + 10);
+}
+
+// To save space, series are stored in a bytearraylist
+// Every first 16 elements are the time stamp of the first 'x' value
+// The nexts 4 bytes are the array length
+// The rest of elements in the list are 1000ms away from first time-stamp.
+// This will be a char * to be more eficient to save and load from disc.
+QByteArray QChartLine::saveSeries() const
+{
+	QByteArray data;
+	long long initialTime = 0;
+	int seriesLength = 0;
+	long long time;
+	long long value;
+	for( int i = 0; i < series->count(); ++i )
+	{
+		time = static_cast<long long>(series->at(i).x())/1000;
+		value = static_cast<long long>(series->at(i).y());
+
+		if( !data.count() || initialTime+seriesLength != time )
+		{
+			initialTime = time;
+			if( data.count() )
+				data.append('\n');
+			toHexChar(time, data);
+			data.append( ':' );
+			seriesLength = 0;
+		}
+
+		// Value:
+		toHexChar(value, data);
+		data.append( ' ' );
+		seriesLength++;
+	}
+	data.append('\n');
+	return data;
+}
+
+void QChartLine::loadSeries(const QByteArray &data, long long &maxY, long long &maxX, long long &minX)
+{
+	long long initialTime = 0;
+	long long value;
+
+	for( int i = 0; i < data.count(); ++i )
+	{
+		if( data.at(i) == '\n' )
+		{
+			initialTime = 0;
+			i++;
+		}
+		if( initialTime == 0 )
+		{
+			for( initialTime = 0; (data.count() > i) && (data[i] != ':'); i++ )
+				initialTime = (initialTime << 4) + fromHex(data[i]);
+
+			initialTime *= 1000;
+			i++;
+			if( !initialTime )
+				continue;
+		}
+
+		// Value.
+		for( value = 0; (data.count() > i) && (data[i] != ' '); i++ )
+			value = (value << 4) + fromHex(data[i]);
+
+		series->append(initialTime, value);
+
+		if( minX == 0 )
+			minX = initialTime;
+
+		if( maxX < initialTime )
+			maxX = initialTime;
+
+		if( maxY < value )
+			maxY = value;
+
+		initialTime+=1000;
+	}
+}

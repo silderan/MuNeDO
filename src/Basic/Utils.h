@@ -47,6 +47,8 @@ void raiseInfo(QWidget *papi, const QString &info, QString title = QString());
 void moveTableRow(QTableWidget *table, int oldRow, int newRow);
 int selectedRow(const QTableWidget *table);
 
+QString safeText(const QString &text);
+
 class QDateTimeTableItem : public QTableWidgetItem
 {
 	QDateTime mDate;

@@ -111,3 +111,8 @@ int Utils::selectedRow(const QTableWidget *table)
 	QList<QTableWidgetItem*> items = table->selectedItems();
 	return items.isEmpty() ? -1 : items.first()->row();
 }
+
+QString Utils::safeText(const QString &text)
+{
+	return QString(text).replace(QRegExp("[^a-zA-Z0-9_]"), "_");
+}

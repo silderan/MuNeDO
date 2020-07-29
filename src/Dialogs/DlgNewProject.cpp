@@ -27,6 +27,7 @@
 #include <QMessageBox>
 
 #include "ProjectManager.h"
+#include "Basic/Utils.h"
 
 DlgNewTab::DlgNewTab(const QStringList &openedProjectFolders, QWidget *parent)
 	: QDialog(parent)
@@ -107,7 +108,7 @@ bool DlgNewTab::validNewProject() const
 
 void DlgNewTab::on_newName_textChanged(const QString &name)
 {
-	ui->newFolder->setText( QString(name).replace(QRegExp("[^a-zA-Z0-9_]"), "_") );
+	ui->newFolder->setText( Utils::safeText(name) );
 	ui->newDescr->setText( name.isEmpty() ? "" : tr("Proyecto para %1").arg(name) );
 }
 void DlgNewTab::on_newFolder_textChanged(const QString &)
