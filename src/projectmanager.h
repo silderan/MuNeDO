@@ -87,7 +87,9 @@ public:
 	bool loadChartConfig(const QString &chartID, QChartConfig &chartConfig) const;
 	bool saveLineSeries(const QString &chartID, const QString &lineID, const QByteArray &series) const;
 	QByteArray loadLineSeries(const QString &chartID, const QString &lineID) const;
+
 	ProjectManager_ErrorCode deleteProject();
+	void deleteChart(const QString &chartID);
 };
 
 #endif // PROJECTMANAGER_H

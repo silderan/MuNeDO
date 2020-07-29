@@ -73,7 +73,7 @@ public:
 	void loadSeries();
 	QPingChartWidget *addPingChart(const QChartConfig &chartConfig, bool save = true);
 	void editChart(QBasicChartWidget *chartWidget);
-	void removeChart(QBasicChartWidget *chartWidget, bool save = true);
+	void removeChart(QBasicChartWidget *chartWidget);
 	void play();
 	void heartbeat();
 };

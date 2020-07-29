@@ -107,7 +107,7 @@ QList<QChartConfig> ProjectManager::loadCharts()
 	QList<QChartConfig> chartConfigList;
 	QChartConfig chartConfig;
 
-	for( const QString &chartID : dir.entryList() )
+	for( const QString &chartID : dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot) )
 	{
 		if( loadChartConfig(chartID, chartConfig) )
 			chartConfigList.append(chartConfig);
@@ -184,4 +184,11 @@ ProjectManager::ProjectManager_ErrorCode ProjectManager::deleteProject()
 	if( !dir.removeRecursively() )
 		return ProjectManager::ProjectManager_ErrorCode::NoDelete;
 	return ProjectManager::ProjectManager_ErrorCode::NoError;
+}
+
+void ProjectManager::deleteChart(const QString &chartID)
+{
+	QDir dir(projectChartFolder(chartID));
+	if( !dir.removeRecursively() )
+		qDebug() << QString("Chart folder %1 cannot been removed").arg(projectChartFolder(chartID));
 }

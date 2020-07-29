@@ -191,13 +191,14 @@ QPingChartWidget *QTabChartHolder::addPingChart(const QChartConfig &chartConfig,
 	return chartWidget;
 }
 
-void QTabChartHolder::removeChart(QBasicChartWidget *chartWidget, bool save)
+void QTabChartHolder::removeChart(QBasicChartWidget *chartWidget)
 {
 	mChartList.removeOne(chartWidget);
-	chartWidget->deleteLater();
 
-	if( save )
-		saveCharts();
+	chartWidget->deleteLater();
+	mProjectManager.deleteChart(chartWidget->chartID());
+
+	saveCharts();
 }
 
 void QTabChartHolder::play()
