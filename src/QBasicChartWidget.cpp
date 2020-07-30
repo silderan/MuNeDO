@@ -29,15 +29,6 @@
 #include "QTabChartHolder.h"
 #include "Basic/ping.h"
 
-//void WorkerThread::run()
-//{
-//	QDateTime cur = QDateTime::currentDateTime().addSecs(1);
-//	while( QDateTime::currentDateTime() < cur )
-//		;
-//	setResultData( QVariant().fromValue(1000) );
-//	emit resultReady(this);
-//}
-
 QT_CHARTS_USE_NAMESPACE
 
 bool QLineConfig::load(const QString &preKey, const QIniData &iniData)
@@ -134,12 +125,14 @@ QChartConfig QBasicChart::getChartConfig() const
 
 QChartLine &QBasicChart::addLine(const QLineConfig &lineConfig, bool isOld, bool paused)
 {
+	Q_UNUSED(paused);
 	if( !isOld )
 	{
 		QChartLine &line = lines[lineConfig.mID];
 		if( line.isValid() && !lineConfig.mIsOld )
 		{
-			line.changeColor(lineConfig.mLineColor);
+			line.setColor(lineConfig.mLineColor);
+			line.setRemoteHost(lineConfig.mRemoteHost);
 			line.setLabel(lineConfig.mLabel);
 			return line;
 		}
@@ -169,7 +162,7 @@ QChartLine &QBasicChart::addLine(const QLineConfig &lineConfig, bool isOld, bool
 	line.series->attachAxis(line.axisY);
 
 	line.setLabel(line.mLabel);
-	line.changeColor(line.mLineColor);
+	line.setColor(line.mLineColor);
 
 	line.axisX->setRange( leftLimit.isValid() ? leftLimit : mInitialTime.isValid() ? mInitialTime : QDateTime::currentDateTime(),
 						  rightLimit.isValid() ? rightLimit : QDateTime::currentDateTime().addMSecs(1) );
@@ -195,7 +188,6 @@ void QBasicChart::delLine(const QLineConfig &lineConfig)
 	line.series->deleteLater();	line.series = Q_NULLPTR;
 
 	lines.remove( lineConfig.mID );
-	removeAsyncPing( lineConfig.mID );
 
 	// If line is visible, as it's gona be removed, visibility goes to another one.
 	if( lines.count() && !lines.first().axisX->isVisible() )
@@ -307,7 +299,10 @@ QBasicChartWidget::QBasicChartWidget(QTabChartHolder *chartHolder, const QString
 void QBasicChartWidget::deleteLater()
 {
 	for( const QChartLine &line : chartLines() )
-		delHost(line);
+	{
+		qDebug() << QString(" Borrando line %1").arg(line.mID);
+		delChartLine(line);
+	}
 	_qChartWidget::deleteLater();
 }
 

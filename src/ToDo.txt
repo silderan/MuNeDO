@@ -1,0 +1,7 @@
+TODO List.
+
+Time in x axis are from received data.
+It's better if it's from sending request instead received.
+
+Once time is from sending request, only one x axis shall be shown.
+

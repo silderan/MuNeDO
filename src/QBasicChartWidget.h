@@ -156,19 +156,21 @@ struct QChartLine : public QLineConfig
 		, axisX(Q_NULLPTR)
 		, axisY(Q_NULLPTR)
 	{	}
+
 	QLineConfig &operator=(const QLineConfig &other)
 	{
 		QLineConfig::operator=(other);
 		return *this;
 	}
 
-	void changeColor(const QColor &clr)
+	void setColor(const QColor &clr)
 	{
 		QPen p(mLineColor = clr);
 		p.setWidth(1);
 		series->setPen(p);
 	}
-	void setLabel(const QString label)		{ series->setName(mLabel = label);	}
+	void setLabel(const QString &label)				{ series->setName(mLabel = label);	}
+	void setRemoteHost(const QString &remoteHost)	{ mRemoteHost = remoteHost;			}
 
 	QByteArray saveSeries() const;
 	void loadSeries(const QByteArray &data, long long &maxY, long long &maxX, long long &minX);
@@ -231,7 +233,8 @@ protected:
 	void setTimeRange(const QDateTime &minTime, const QDateTime &maxTime);
 
 public:
-	explicit QBasicChart(const QString &chartType, QGraphicsItem *parent = Q_NULLPTR, Qt::WindowFlags wFlags = Qt::Widget);
+	QBasicChart(const QString &chartType, QGraphicsItem *parent = Q_NULLPTR, Qt::WindowFlags wFlags = Qt::Widget);
+
 
 	const QChartLineList &chartLines() const	{ return lines;	}
 	QChartLineList &chartLines()				{ return lines;	}
@@ -294,8 +297,8 @@ public:
 
 	int linesCount() const						{ return mChart->linesCount();	}
 
-	virtual QChartLine &addHost(const QLineConfig &lineConfig, bool isOld, bool paused)	{ return chart()->addLine(lineConfig, isOld, paused);	}
-	virtual void delHost(const QLineConfig &lineConfig)									{ chart()->delLine(lineConfig);							}
+	virtual QChartLine &addChartLine(const QLineConfig &lineConfig, bool isOld, bool paused)	{ return chart()->addLine(lineConfig, isOld, paused);	}
+	virtual void delChartLine(const QLineConfig &lineConfig)									{ chart()->delLine(lineConfig);							}
 
 	void setInitialTime(const QDateTime &initialTime)		{ mChart->setInitialTime(initialTime);	}
 	void setPaused(bool paused)								{ mChart->setPaused(paused);			}

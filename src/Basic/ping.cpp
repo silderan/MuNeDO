@@ -21,6 +21,7 @@
 **************************************************************************/
 
 #include "ping.h"
+#include <QtDebug>
 
 QString ping(QString dst)
 {
@@ -138,6 +139,8 @@ protected:
 	virtual void run() override	{	if( !isPaused() ) setResult( QVariant::fromValue(pingDelay(hostname())) );	}
 };
 
+bool gProtected;
+
 _WorkerThread *findWorker(const QString &id)
 {
 	for( _WorkerThread *wt : gAllThreads )
@@ -146,31 +149,28 @@ _WorkerThread *findWorker(const QString &id)
 	return Q_NULLPTR;
 }
 
-_PingThread *addBasicThread(const QString &id, const QString &hostname, std::function<void(const QString &, const QVariant &)> fnc, bool paused)
-{
-	Q_ASSERT( findWorker(id) == Q_NULLPTR );
-	_PingThread *wt = new _PingThread();
-	wt->setID(id);
-	wt->setHostname(hostname);
-	wt->setCallbackFnc(fnc);
-	wt->setPaused(paused);
-	gAllThreads.append(wt);
-	return wt;
-}
-
 void removeThreadWork(const QString &id)
 {
-	_WorkerThread *wt = findWorker(id);
-	if( wt )
+	if( _WorkerThread *wt = findWorker(id) )
 	{
-//		wt->deleteLater();
+		wt->setPaused(true);
 		gAllThreads.removeOne(wt);
+		wt->deleteLater();
 	}
 }
 
 void addAsyncPingDelay(const QString &pingID, const QString &dst, std::function<void(const QString &, const QVariant &)> fnc, bool paused)
 {
-	addBasicThread(pingID, dst, fnc, paused);
+	_PingThread *wt = static_cast<_PingThread*>(findWorker(pingID));
+	if( !wt )
+	{
+		wt = new _PingThread();
+		wt->setID(pingID);
+	}
+	wt->setHostname(dst);
+	wt->setCallbackFnc(fnc);
+	wt->setPaused(paused);
+	gAllThreads.append(wt);
 }
 
 void removeAsyncPing(const QString &pingID)

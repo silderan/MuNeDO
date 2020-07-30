@@ -103,10 +103,11 @@ void QTabChartHolder::editChart(QBasicChartWidget *chartWidget)
 
 			for( const QChartLine &oldLine : chartWidget->chartLines() )
 				if( !newChrtCnfg.containsLine(oldLine.mID) )
-					chartWidget->delHost(oldLine);
+					chartWidget->delChartLine(oldLine);
 
 			for( const QLineConfig &host : newChrtCnfg.mLines  )
-				chartWidget->addHost(host, false, !mPlaying);
+				if( !host.mID.isEmpty() && !host.mRemoteHost.isEmpty() && !host.mLabel.isEmpty() )
+					chartWidget->addChartLine(host, false, !mPlaying);
 		}
 		saveCharts();
 	}
@@ -154,7 +155,7 @@ void QTabChartHolder::loadSeries()
 		{
 			if( !line.mIsOld )
 			{
-				chart->addHost(line, true, true)
+				chart->addChartLine(line, true, true)
 				.loadSeries( mProjectManager.loadLineSeries(chart->chartID(), line.mID), maxY, maxX, minX );
 			}
 		}
@@ -186,7 +187,7 @@ QPingChartWidget *QTabChartHolder::addPingChart(const QChartConfig &chartConfig,
 	addChart(chartConfig, static_cast<QBasicChartWidget*>(chartWidget));
 
 	for( const QLineConfig &lineConfig : chartConfig.mLines )
-		chartWidget->addHost(lineConfig, false, !mPlaying);
+		chartWidget->addChartLine(lineConfig, false, !mPlaying);
 
 	if( save )
 		saveCharts();

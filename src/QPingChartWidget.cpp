@@ -24,15 +24,15 @@
 
 #include "Basic/ping.h"
 
-QChartLine &QPingChartWidget::addHost(const QLineConfig &lineConfig, bool isOld, bool paused)
+QChartLine &QPingChartWidget::addChartLine(const QLineConfig &lineConfig, bool isOld, bool paused)
 {
-	QChartLine &line = QBasicChartWidget::addHost(lineConfig, isOld, paused);
-	addAsyncPingDelay(line.mID, line.mRemoteHost, [this](const QString &id, const QVariant &val) {this->chart()->onResult(id, val);}, paused );
+	QChartLine &line = QBasicChartWidget::addChartLine(lineConfig, isOld, paused);
+	addAsyncPingDelay(lineConfig.mID, lineConfig.mRemoteHost, [this](const QString &id, const QVariant &val) {this->chart()->onResult(id, val);}, paused );
 	return line;
 }
 
-void QPingChartWidget::delHost(const QLineConfig &lineConfig)
+void QPingChartWidget::delChartLine(const QLineConfig &lineConfig)
 {
 	removeAsyncPing(lineConfig.mID);
+	QBasicChartWidget::delChartLine(lineConfig);
 }
-
