@@ -26,6 +26,7 @@
 #include <QDebug>
 
 #include "Dialogs/DlgEditPingChart.h"
+#include "Basic/ping.h"
 
 QTabChartHolder::QTabChartHolder(QWidget *papi)
 	: QWidget(papi)
@@ -75,8 +76,9 @@ ProjectManager::ProjectManager_ErrorCode QTabChartHolder::loadProject(const QStr
 
 		playButton = new QToolButton(this);
 		playButton->setObjectName(QString::fromUtf8("playButton"));
-		connect( playButton, &QToolButton::clicked, this, &QTabChartHolder::play );
+		connect( playButton, &QToolButton::clicked, this, &QTabChartHolder::togglePlaying );
 
+		playButton->setIcon(QIcon(":/images/play.png"));
 		gridLayout_2->addWidget(playButton, 1, 1, 1, 1);
 
 		loadCharts();
@@ -104,7 +106,7 @@ void QTabChartHolder::editChart(QBasicChartWidget *chartWidget)
 					chartWidget->delHost(oldLine);
 
 			for( const QLineConfig &host : newChrtCnfg.mLines  )
-				chartWidget->addHost(host, false);
+				chartWidget->addHost(host, false, !mPlaying);
 		}
 		saveCharts();
 	}
@@ -152,7 +154,7 @@ void QTabChartHolder::loadSeries()
 		{
 			if( !line.mIsOld )
 			{
-				chart->addHost(line, true)
+				chart->addHost(line, true, true)
 				.loadSeries( mProjectManager.loadLineSeries(chart->chartID(), line.mID), maxY, maxX, minX );
 			}
 		}
@@ -184,7 +186,7 @@ QPingChartWidget *QTabChartHolder::addPingChart(const QChartConfig &chartConfig,
 	addChart(chartConfig, static_cast<QBasicChartWidget*>(chartWidget));
 
 	for( const QLineConfig &lineConfig : chartConfig.mLines )
-		chartWidget->addHost(lineConfig, false);
+		chartWidget->addHost(lineConfig, false, !mPlaying);
 
 	if( save )
 		saveCharts();
@@ -201,7 +203,7 @@ void QTabChartHolder::removeChart(QBasicChartWidget *chartWidget)
 	saveCharts();
 }
 
-void QTabChartHolder::play()
+void QTabChartHolder::togglePlaying()
 {
 	if( !mPlaying )
 	{
@@ -210,19 +212,32 @@ void QTabChartHolder::play()
 			mLeftTime = mInitialTime = QDateTime::currentDateTime();
 
 		for( QBasicChartWidget *chart : mChartList )
+		{
 			chart->setInitialTime(mInitialTime);
+			chart->setPaused(false);
+		}
+		playButton->setIcon(QIcon(":/images/stop.png"));
 	}
 	else
+	{
+		playButton->setIcon(QIcon(":/images/play.png"));
 		mPlaying = false;
+		for( QBasicChartWidget *chart : mChartList )
+			chart->setPaused(true);
+	}
 }
+
+void QTabChartHolder::closeProject()
+{
+	if( mPlaying )
+		togglePlaying();
+
+	for( QBasicChartWidget *chart : mChartList )
+		chart->deleteLater();
+	mChartList.clear();
+}
+
 void QTabChartHolder::leftLimitChanged(int newVal)
 {
 
-}
-
-void QTabChartHolder::heartbeat()
-{
-	if( mPlaying )
-		for( QBasicChartWidget *chart : mChartList )
-			chart->heartbeat();
 }

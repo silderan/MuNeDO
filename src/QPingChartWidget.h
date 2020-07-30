@@ -31,7 +31,8 @@ public:
 	QPingChartWidget(QTabChartHolder *chartHolder)
 		: QBasicChartWidget(chartHolder, "ping")
 	{	}
-	virtual void on_DoJob(WorkerThread *wt) override;
+	virtual QChartLine &addHost(const QLineConfig &lineConfig, bool isOld, bool paused) override;
+	virtual void delHost(const QLineConfig &lineConfig) override;
 };
 
 #endif // QPINGCHART_H

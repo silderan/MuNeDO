@@ -27,6 +27,8 @@
 #include "Dialogs/DlgNewProject.h"
 #include "ProjectManager.h"
 
+#include "Basic/ping.h"
+
 #include <QDebug>
 
 MainWindow::MainWindow(QWidget *parent)
@@ -46,8 +48,9 @@ MainWindow::~MainWindow()
 
 void MainWindow::heartbeat()
 {
-	for( int i = 0; i < ui->tabWidget->count(); ++i )
-		static_cast<QTabChartHolder*>(ui->tabWidget->widget(i))->heartbeat();
+	executeAllThreads();
+//	for( int i = 0; i < ui->tabWidget->count(); ++i )
+//		static_cast<QTabChartHolder*>(ui->tabWidget->widget(i))->heartbeat();
 }
 
 // Action del menú para añadir una nueva pestaña de proyecto.
@@ -88,6 +91,7 @@ QStringList MainWindow::openedProjectFolders() const
 
 void MainWindow::on_tabWidget_tabBarDoubleClicked(int index)
 {
+	static_cast<QTabChartHolder*>(ui->tabWidget->widget(index))->closeProject();
 	ui->tabWidget->removeTab(index);
 }
 

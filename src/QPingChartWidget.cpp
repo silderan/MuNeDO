@@ -21,16 +21,18 @@
 **************************************************************************/
 
 #include "QPingChartWidget.h"
+
 #include "Basic/ping.h"
 
-#include <QMenu>
-
-#include <QDebug>
-
-#include "Dialogs/DlgEditPingChart.h"
-
-
-void QPingChartWidget::on_DoJob(WorkerThread *wt)
+QChartLine &QPingChartWidget::addHost(const QLineConfig &lineConfig, bool isOld, bool paused)
 {
-	wt->setResultData( QVariant().fromValue(pingDelay(wt->hostname())) );
+	QChartLine &line = QBasicChartWidget::addHost(lineConfig, isOld, paused);
+	addAsyncPingDelay(line.mID, line.mRemoteHost, [this](const QString &id, const QVariant &val) {this->chart()->onResult(id, val);}, paused );
+	return line;
 }
+
+void QPingChartWidget::delHost(const QLineConfig &lineConfig)
+{
+	removeAsyncPing(lineConfig.mID);
+}
+

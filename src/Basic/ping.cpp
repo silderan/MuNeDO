@@ -100,3 +100,94 @@ QString pongToString(const PongData &pongData)
 	}
 	return strMessage;
 }
+
+class _WorkerThread : public QThread
+{
+	QVariant mResultData;
+	QString mHostname;
+	QString mID;
+	std::function<void (const QString &, const QVariant &)> mCallbackFnc;
+	QVariant mResult;
+	bool mPaused;
+
+protected:
+	void setResult(const QVariant &value)	{ if( !mPaused ) { mResult = value;	mCallbackFnc(mID, value); }		}
+
+public:
+	_WorkerThread()
+	{	}
+
+	const QString &hostname() const		{ return mHostname;		}
+	const QString &id() const			{ return mID;			}
+
+	void setCallbackFnc(std::function<void (const QString &, const QVariant &)> callback )	{ mCallbackFnc = callback;	}
+	void setHostname(const QString &hostname)	{ mHostname = hostname;	}
+	void setID(const QString &id)				{ mID = id;	}
+
+	void setPaused(bool paused)		{ mPaused = paused;	}
+	bool isPaused() const			{ return mPaused;	}
+	const QVariant &result() const		{ return mResult;	}
+};
+
+QList<_WorkerThread*> gAllThreads;
+
+
+class _PingThread : public _WorkerThread
+{
+protected:
+	virtual void run() override	{	if( !isPaused() ) setResult( QVariant::fromValue(pingDelay(hostname())) );	}
+};
+
+_WorkerThread *findWorker(const QString &id)
+{
+	for( _WorkerThread *wt : gAllThreads )
+		if( wt->id() == id )
+			return wt;
+	return Q_NULLPTR;
+}
+
+_PingThread *addBasicThread(const QString &id, const QString &hostname, std::function<void(const QString &, const QVariant &)> fnc, bool paused)
+{
+	Q_ASSERT( findWorker(id) == Q_NULLPTR );
+	_PingThread *wt = new _PingThread();
+	wt->setID(id);
+	wt->setHostname(hostname);
+	wt->setCallbackFnc(fnc);
+	wt->setPaused(paused);
+	gAllThreads.append(wt);
+	return wt;
+}
+
+void removeThreadWork(const QString &id)
+{
+	_WorkerThread *wt = findWorker(id);
+	if( wt )
+	{
+//		wt->deleteLater();
+		gAllThreads.removeOne(wt);
+	}
+}
+
+void addAsyncPingDelay(const QString &pingID, const QString &dst, std::function<void(const QString &, const QVariant &)> fnc, bool paused)
+{
+	addBasicThread(pingID, dst, fnc, paused);
+}
+
+void removeAsyncPing(const QString &pingID)
+{
+	removeThreadWork(pingID);
+}
+
+void executeAllThreads()
+{
+	for( _WorkerThread *wt : gAllThreads )
+		if( !wt->isPaused() )
+			wt->start();
+}
+
+void setThreadPaused(const QString &id, bool paused)
+{
+	for( _WorkerThread *wt : gAllThreads )
+		if( wt->id() == id )
+			wt->setPaused(paused);
+}

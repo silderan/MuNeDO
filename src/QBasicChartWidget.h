@@ -35,33 +35,6 @@
 
 #include "Basic/QIniFile.h"
 
-class WorkerThread : public QThread
-{
-	Q_OBJECT
-
-	QVariant mResultData;
-	QString mHostname;
-	QString mID;
-
-protected:
-	void run() override;
-
-public:
-	WorkerThread(){}
-
-	const QVariant &resultData() const	{ return mResultData;	}
-	const QString &hostname() const		{ return mHostname;		}
-	const QString &id() const			{ return mID;			}
-
-	void setResultData(const QVariant &data)	{ mResultData = data;	}
-	void setHostname(const QString &hostname)	{ mHostname = hostname;	}
-	void setID(const QString &id)				{ mID = id;	}
-
-signals:
-	void resultReady(WorkerThread *thread);
-	void doJob(WorkerThread *thread);
-};
-
 #ifdef QT_CHARTS_NAMESPACE
 using _qCharts = QT_CHARTS_NAMESPACE::QChart;
 using _qChartWidget = QT_CHARTS_NAMESPACE::QChartView;
@@ -272,22 +245,14 @@ public:
 
 	QChartConfig getChartConfig() const;
 
-	QChartLine &addLine(const QString &id,
-				   const QString &label,
-				   const QString &remoteHost,
-				   const QString &requestType,
-				   const QString &requestValue,
-				   const QStringList &requestParameters,
-				   const QColor &clr, bool isOld)
-	{
-		return addLine( QLineConfig(id, label, remoteHost, requestType, requestValue, requestParameters, clr), isOld );
-	}
-	QChartLine &addLine(const QLineConfig &lineConfig, bool isOld);
+	QChartLine &addLine(const QLineConfig &lineConfig, bool isOld, bool paused);
 	void delLine(const QLineConfig &lineConfig);
 
 	void addValue(const QString &lineID, unsigned long value);
-//	QBasicChartLineConfigList basicChartLineConfigList() const;
+	void onResult(const QString &id, const QVariant &result)	{ addValue(id, result.toUInt()); }
+
 	void setInitialTime(const QDateTime &initialTime);
+	void setPaused(bool paused);
 
 	// Set times to be shown in chart.
 	// If firstTime is invalid, it defaults to initialTime
@@ -303,19 +268,16 @@ class QBasicChartWidget : public _qChartWidget
 Q_OBJECT
 
 	QBasicChart *mChart;
-	QList<WorkerThread*> mAllThreads;
 	QTabChartHolder *mChartHolder;
-
-	WorkerThread *getFreeThread();
-
-	QBasicChart *chart()				{ return mChart;	}
-	const QBasicChart *chart() const	{ return mChart;	}
 
 protected:
 	virtual void mouseDoubleClickEvent(QMouseEvent *event);
 
 public:
 	QBasicChartWidget(QTabChartHolder *chartHolder, const QString &chartType);
+
+	QBasicChart *chart()				{ return mChart;	}
+	const QBasicChart *chart() const	{ return mChart;	}
 
 	QChartConfig getChartConfig() const			{ return chart()->getChartConfig();	}
 	QTabChartHolder *chartHolder()				{ return mChartHolder;	}
@@ -332,26 +294,17 @@ public:
 
 	int linesCount() const						{ return mChart->linesCount();	}
 
-	QChartLine &addHost(const QString &id, const QString &label, const QString &remoteHost,const QString &requestType,
-				 const QString &requestValue,const QStringList &requestParameters, const QColor &clr, bool isOld)
-	{
-		return mChart->addLine(id, label, remoteHost, requestType, requestValue, requestParameters, clr, isOld);
-	}
-	QChartLine &addHost(const QLineConfig &lineConfig, bool isOld)				{ return mChart->addLine(lineConfig, isOld);	}
+	virtual QChartLine &addHost(const QLineConfig &lineConfig, bool isOld, bool paused)	{ return chart()->addLine(lineConfig, isOld, paused);	}
+	virtual void delHost(const QLineConfig &lineConfig)									{ chart()->delLine(lineConfig);							}
 
-	void delHost(const QLineConfig &lineConfig);
-	void setInitialTime(const QDateTime &initialTime)				{ mChart->setInitialTime(initialTime);	}
+	void setInitialTime(const QDateTime &initialTime)		{ mChart->setInitialTime(initialTime);	}
+	void setPaused(bool paused)								{ mChart->setPaused(paused);			}
 	// Set times to be shown in chart.
 	// If firstTime is invalid, it defaults to initialTime
 	// If lastTime is invalid, it defaults to currentTime.
 	void setTimeRange(const QDateTime &firstTime, const QDateTime &lastTime)	{ mChart->setTimes(firstTime, lastTime);	}
 	void setMaxY(long long maxY)												{ mChart->setMaxY(maxY);	}
-
-	virtual void addValue(const QString &id, unsigned long value)				{ return chart()->addValue(id, value);}
-	virtual void on_ResultReady(WorkerThread *wt);
-	virtual void on_DoJob(WorkerThread *wt) = 0;
-
-	void heartbeat();
+	void deleteLater();
 
 signals:
 	void dobleClic(QBasicChartWidget *chartWidget);

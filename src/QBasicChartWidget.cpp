@@ -27,12 +27,16 @@
 #include <QDebug>
 
 #include "QTabChartHolder.h"
+#include "Basic/ping.h"
 
-void WorkerThread::run()
-{
-	emit doJob(this);
-	emit resultReady(this);
-}
+//void WorkerThread::run()
+//{
+//	QDateTime cur = QDateTime::currentDateTime().addSecs(1);
+//	while( QDateTime::currentDateTime() < cur )
+//		;
+//	setResultData( QVariant().fromValue(1000) );
+//	emit resultReady(this);
+//}
 
 QT_CHARTS_USE_NAMESPACE
 
@@ -128,7 +132,7 @@ QChartConfig QBasicChart::getChartConfig() const
 	return chartConfig;
 }
 
-QChartLine &QBasicChart::addLine(const QLineConfig &lineConfig, bool isOld)
+QChartLine &QBasicChart::addLine(const QLineConfig &lineConfig, bool isOld, bool paused)
 {
 	if( !isOld )
 	{
@@ -191,6 +195,7 @@ void QBasicChart::delLine(const QLineConfig &lineConfig)
 	line.series->deleteLater();	line.series = Q_NULLPTR;
 
 	lines.remove( lineConfig.mID );
+	removeAsyncPing( lineConfig.mID );
 
 	// If line is visible, as it's gona be removed, visibility goes to another one.
 	if( lines.count() && !lines.first().axisX->isVisible() )
@@ -272,6 +277,12 @@ void QBasicChart::setInitialTime(const QDateTime &initialTime)
 	}
 }
 
+void QBasicChart::setPaused(bool paused)
+{
+	for( const QChartLine &line : lines )
+		setThreadPaused(line.mID, paused);
+}
+
 void QBasicChart::setTimes(const QDateTime &firstTime, const QDateTime &lastTime)
 {
 	leftLimit = firstTime.isValid() ? firstTime : mInitialTime;
@@ -293,48 +304,17 @@ QBasicChartWidget::QBasicChartWidget(QTabChartHolder *chartHolder, const QString
 {
 }
 
-WorkerThread *QBasicChartWidget::getFreeThread()
+void QBasicChartWidget::deleteLater()
 {
-	for( WorkerThread *hilo : mAllThreads )
-		if( hilo->isFinished() )
-			return hilo;
-
-	WorkerThread *workerThread = new WorkerThread();
-	mAllThreads.append(workerThread);
-	connect(workerThread, &WorkerThread::doJob, this, &QBasicChartWidget::on_DoJob);
-	connect(workerThread, &WorkerThread::resultReady, this, &QBasicChartWidget::on_ResultReady);
-
-	return workerThread;
+	for( const QChartLine &line : chartLines() )
+		delHost(line);
+	_qChartWidget::deleteLater();
 }
 
 void QBasicChartWidget::mouseDoubleClickEvent(QMouseEvent *event)
 {
 	Q_UNUSED(event);
 	emit dobleClic(this);
-}
-
-void QBasicChartWidget::heartbeat()
-{
-	for( const QChartLine &line : chartLines() )
-	{
-		if( !line.mIsOld )
-		{
-			WorkerThread *wt = getFreeThread();
-			wt->setHostname( line.mRemoteHost );
-			wt->setID( line.mID );
-			wt->start();
-		}
-	}
-}
-
-void QBasicChartWidget::delHost(const QLineConfig &lineConfig)
-{
-	chart()->delLine(lineConfig);
-}
-
-void QBasicChartWidget::on_ResultReady(WorkerThread *wt)
-{
-	addValue( wt->id(), wt->resultData().toUInt() );
 }
 
 char toHexChar(char i)

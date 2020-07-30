@@ -24,10 +24,14 @@
 #define PING_H
 
 #include <QString>
+#include <QVariant>
 
 #include "winsock2.h"
 #include "iphlpapi.h"
 #include "icmpapi.h"
+
+#include <QThread>
+#include <QVariant>
 
 struct PongData
 {
@@ -39,5 +43,12 @@ struct PongData
 QString pongToString(const PongData &pongData);
 QString	ping(QString dst);
 unsigned long pingDelay(QString dst);
+
+void addAsyncPingDelay(const QString &pingID, const QString &dst, std::function<void(const QString &, const QVariant &)> fnc, bool paused);
+void removeAsyncPing(const QString &pingID);
+
+void setPaused(const QString &id, bool paused);
+void executeAllThreads();
+void setThreadPaused(const QString &id, bool paused);
 
 #endif // PING_H

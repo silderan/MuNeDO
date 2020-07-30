@@ -74,8 +74,8 @@ public:
 	QPingChartWidget *addPingChart(const QChartConfig &chartConfig, bool save = true);
 	void editChart(QBasicChartWidget *chartWidget);
 	void removeChart(QBasicChartWidget *chartWidget);
-	void play();
-	void heartbeat();
+	void togglePlaying();
+	void closeProject();
 };
 
 #endif // QTABCHARTHOLDER_H
