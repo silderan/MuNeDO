@@ -31,6 +31,7 @@
 
 #include "QPingChartWidget.h"
 #include "ProjectManager.h"
+#include "QMultipleHandleSlider.h"
 
 #include <QList>
 #include <QLabel>
@@ -39,11 +40,11 @@ class QTabChartHolder : public QWidget
 {
 Q_OBJECT
 
-	QGridLayout *gridLayout_2;
+	QGridLayout *gridLayoutBase;
 	QVBoxLayout *verticalLayout;
 	QScrollArea *scrollArea;
 	QWidget *scrollAreaWidgetContents;
-	QSlider *horizontalSlider;
+	QSlider *iniTimeSlider;
 	QList<QBasicChartWidget*> mChartList;
 	QToolButton *playButton;
 
@@ -53,11 +54,15 @@ Q_OBJECT
 	QDateTime mInitialTime;
 	QDateTime mLeftTime;
 	QDateTime mRightTime;
+	QString mIniTimeID;
+	QString mEndTimeID;
+	QMultipleHandleSlider *mTimeSlider;
 
 	void leftLimitChanged(int newVal);
 
 	QBasicChartWidget *addChart(const QChartConfig &chartConfig, QBasicChartWidget *chartWidget);
 
+	void onTimeSliderValueChanged(int value, const QString &id);
 public:
 	QTabChartHolder(QWidget *papi = nullptr);
 
@@ -76,6 +81,9 @@ public:
 	void removeChart(QBasicChartWidget *chartWidget);
 	void togglePlaying();
 	void closeProject();
+
+signals:
+	void timeSliderValueChanged(const QDateTime &iniTime, const QDateTime &endTime);
 };
 
 #endif // QTABCHARTHOLDER_H

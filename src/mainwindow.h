@@ -42,6 +42,7 @@ public:
 
 	QTimer heartTimer;
 
+	void onTimeValueChanged(const QDateTime &iniTime, const QDateTime &endTime);
 private slots:
 	void heartbeat();
 	void on_addChartAction_triggered();

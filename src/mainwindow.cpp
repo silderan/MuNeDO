@@ -46,6 +46,11 @@ MainWindow::~MainWindow()
 	delete ui;
 }
 
+void MainWindow::onTimeValueChanged(const QDateTime &iniTime, const QDateTime &endTime)
+{
+		ui->statusbar->showMessage( QString("Time from %1 to %2").arg(iniTime.toString()).arg(endTime.toString()) );
+}
+
 void MainWindow::heartbeat()
 {
 	executeAllThreads();
@@ -63,7 +68,10 @@ void MainWindow::on_addProjectAction_triggered()
 	{
 		QTabChartHolder *tab = new QTabChartHolder(Q_NULLPTR);
 		if( tab->loadProject(dlg.projectFolder()) == ProjectManager::ProjectManager_ErrorCode::NoError )
+		{
 			ui->tabWidget->addTab(tab, tab->projectName());
+			connect( tab, &QTabChartHolder::timeSliderValueChanged, this, &MainWindow::onTimeValueChanged );
+		}
 		else
 			delete tab;
 	}

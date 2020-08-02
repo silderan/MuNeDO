@@ -21,6 +21,7 @@
 **************************************************************************/
 
 #include "QTabChartHolder.h"
+#include "QTabChartHolder.h"
 
 #include <QMenu>
 #include <QDebug>
@@ -30,15 +31,17 @@
 
 QTabChartHolder::QTabChartHolder(QWidget *papi)
 	: QWidget(papi)
-	, gridLayout_2(Q_NULLPTR)
+	, gridLayoutBase(Q_NULLPTR)
 	, verticalLayout(Q_NULLPTR)
 	, scrollArea(Q_NULLPTR)
 	, scrollAreaWidgetContents(Q_NULLPTR)
-	, horizontalSlider(Q_NULLPTR)
+	, iniTimeSlider(Q_NULLPTR)
 	, playButton(Q_NULLPTR)
 	, mProjectManager("")
 	, mAddChartAction( new QAction( tr("Añadir Gráfica"), this) )
 	, mPlaying(false)
+	, mIniTimeID("iniTimeID")
+	, mEndTimeID("endTimeID")
 {
 }
 
@@ -48,12 +51,10 @@ ProjectManager::ProjectManager_ErrorCode QTabChartHolder::loadProject(const QStr
 
 	if( err == ProjectManager::ProjectManager_ErrorCode::NoError )
 	{
-		// ToDo: Remove all widgets.
-
-		gridLayout_2 = new QGridLayout(this);
-		gridLayout_2->setSpacing(0);
-		gridLayout_2->setObjectName(QString::fromUtf8("gridLayout_2"));
-		gridLayout_2->setContentsMargins(0, 0, 0, 0);
+		gridLayoutBase = new QGridLayout(this);
+		gridLayoutBase->setSpacing(0);
+		gridLayoutBase->setObjectName(QString::fromUtf8("gridLayout_2"));
+		gridLayoutBase->setContentsMargins(0, 0, 0, 0);
 		scrollArea = new QScrollArea(this);
 		scrollArea->setObjectName(QString::fromUtf8("scrollArea"));
 		scrollArea->setWidgetResizable(true);
@@ -64,22 +65,32 @@ ProjectManager::ProjectManager_ErrorCode QTabChartHolder::loadProject(const QStr
 		verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));
 		verticalLayout->setContentsMargins(0, 2, 0, 2);
 		scrollArea->setWidget(scrollAreaWidgetContents);
-		gridLayout_2->addWidget(scrollArea, 0, 0, 1, 2);
+		gridLayoutBase->addWidget(scrollArea, 0, 0, 1, 2);
 
-		horizontalSlider = new QSlider(this);
-		horizontalSlider->setObjectName(QString::fromUtf8("horizontalSlider"));
-		horizontalSlider->setOrientation(Qt::Horizontal);
-		horizontalSlider->setRange(0, 0);
-		connect( horizontalSlider, &QSlider::valueChanged, this, &QTabChartHolder::leftLimitChanged );
+		mTimeSlider = new QMultipleHandleSlider(this);
+		mTimeSlider->setObjectName(QString::fromUtf8("timeSlider"));
+		mTimeSlider->setRange(QDateTime::currentSecsSinceEpoch()-10, QDateTime::currentSecsSinceEpoch());
 
-		gridLayout_2->addWidget(horizontalSlider, 1, 0, 1, 1);
+		QColor clr(Qt::blue);
+
+		mTimeSlider->addHandle( mIniTimeID, clr, clr.lighter(), QSize(14, 25) );
+		mTimeSlider->setValue( QDateTime::currentSecsSinceEpoch()-9, mIniTimeID );
+
+		mTimeSlider->addHandle( mEndTimeID, clr, clr.lighter(), QSize(14, 25) );
+		mTimeSlider->setValue( QDateTime::currentSecsSinceEpoch()-1, mEndTimeID );
+
+		mTimeSlider->addMiddleHandle( mIniTimeID, mEndTimeID, clr.darker(), clr );
+
+		connect( mTimeSlider, &QMultipleHandleSlider::valueChanged, this, &QTabChartHolder::onTimeSliderValueChanged );
+
+		gridLayoutBase->addWidget(mTimeSlider, 1, 0, 1, 1);
 
 		playButton = new QToolButton(this);
 		playButton->setObjectName(QString::fromUtf8("playButton"));
 		connect( playButton, &QToolButton::clicked, this, &QTabChartHolder::togglePlaying );
 
 		playButton->setIcon(QIcon(":/images/play.png"));
-		gridLayout_2->addWidget(playButton, 1, 1, 1, 1);
+		gridLayoutBase->addWidget(playButton, 1, 1, 1, 1);
 
 		loadCharts();
 //		loadSeries();
@@ -156,7 +167,7 @@ void QTabChartHolder::loadSeries()
 			if( !line.mIsOld )
 			{
 				chart->addChartLine(line, true, true)
-				.loadSeries( mProjectManager.loadLineSeries(chart->chartID(), line.mID), maxY, maxX, minX );
+					.loadSeries( mProjectManager.loadLineSeries(chart->chartID(), line.mID), maxY, maxX, minX );
 			}
 		}
 		if( maxX == minX )
@@ -178,6 +189,17 @@ QBasicChartWidget *QTabChartHolder::addChart(const QChartConfig &chartConfig, QB
 	chartWidget->setTimeRange(mLeftTime, mRightTime);
 	connect( chartWidget, &QBasicChartWidget::dobleClic, this, &QTabChartHolder::editChart );
 	return chartWidget;
+}
+
+void QTabChartHolder::onTimeSliderValueChanged(int value, const QString &id)
+{
+	Q_UNUSED(value);
+	Q_UNUSED(id);
+
+	mLeftTime = QDateTime::fromSecsSinceEpoch(mTimeSlider->value(mIniTimeID));
+	mRightTime = QDateTime::fromSecsSinceEpoch(mTimeSlider->value(mEndTimeID));
+
+	emit timeSliderValueChanged(mLeftTime, mRightTime);
 }
 
 QPingChartWidget *QTabChartHolder::addPingChart(const QChartConfig &chartConfig, bool save)

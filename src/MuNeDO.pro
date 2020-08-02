@@ -27,6 +27,7 @@ SOURCES += \
 	Dialogs/DlgNewProject.cpp \
 	ProjectManager.cpp \
     QBasicChartWidget.cpp \
+	QMultipleHandleSlider.cpp \
 	QPingChartWidget.cpp \
     QTabChartHolder.cpp \
 	main.cpp \
@@ -40,6 +41,7 @@ HEADERS += \
 	Dialogs/DlgNewProject.h \
 	ProjectManager.h \
     QBasicChartWidget.h \
+	QMultipleHandleSlider.h \
 	QPingChartWidget.h \
     QTabChartHolder.h \
 	mainwindow.h
