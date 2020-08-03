@@ -238,7 +238,7 @@ void QBasicChart::setTimeRange(const QDateTime &minTime, const QDateTime &maxTim
 		line.axisX->setRange( minTime, maxTime );
 }
 
-void QBasicChart::addValue(const QString &lineID, unsigned long value)
+void QBasicChart::addValue(const QString &lineID, unsigned long value, const QDateTime &time)
 {
 	if( !lines.contains(lineID) )
 	{
@@ -247,14 +247,14 @@ void QBasicChart::addValue(const QString &lineID, unsigned long value)
 	}
 
 //	qDebug() << "Adding in " << hostname << ": " << value << " at " << QDateTime::currentDateTime();
-	lines[lineID].series->append(QDateTime::currentMSecsSinceEpoch(), value);
+	lines[lineID].series->append(time.currentMSecsSinceEpoch(), value);
 
 	for( QChartLine &line : lines )
 	{
 		if( value > line.axisY->max() )
 			line.axisY->setMax(value);
 		if( !rightLimit.isValid() )
-			line.axisX->setMax(QDateTime::currentDateTime());
+			line.axisX->setMax(time);
 	}
 }
 
@@ -304,6 +304,12 @@ void QBasicChartWidget::deleteLater()
 		delChartLine(line);
 	}
 	_qChartWidget::deleteLater();
+}
+
+void QBasicChartWidget::onResult(const QString &id, const QVariant &value, const QDateTime &time)
+{
+	mChart->onResult(id, value, time);
+	emit endTimeUpdated(time);
 }
 
 void QBasicChartWidget::mouseDoubleClickEvent(QMouseEvent *event)

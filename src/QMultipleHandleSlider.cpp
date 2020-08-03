@@ -208,7 +208,7 @@ QMultipleHandleSliderHandle::QMultipleHandleSliderHandle(QMultipleHandleSlider *
 	setNormalColor();
 }
 
-void QMultipleHandleSliderHandle::setValue(double value)
+void QMultipleHandleSliderHandle::setValue(quint64 value)
 {
 	mValue = value;
 	updateHandlePos_fromValue();
@@ -224,7 +224,7 @@ void QMultipleHandleSlider::resizeEvent(QResizeEvent *event)
 		mMiddleHandle->updateView();
 }
 
-void QMultipleHandleSlider::onValueChanged(double value, const QString &id)
+void QMultipleHandleSlider::onValueChanged(quint64 value, const QString &id)
 {
 	Q_UNUSED(value);
 	Q_UNUSED(id);
@@ -240,16 +240,28 @@ QMultipleHandleSlider::QMultipleHandleSlider(QWidget *parent)
 	setObjectName(QString::fromUtf8("timeSlider"));
 	setFrameShape(QFrame::Panel);
 	setFrameShadow(QFrame::Sunken);
+}
 
-	//	//styling
-//	setOrientation(Qt::Horizontal);
-//	setAcceptDrops(true);
-//	SliderProxy *aSliderProxy = new SliderProxy();
-
-//	//hard coded path to image :/ sorry
-//	QString path = QDir::fromNativeSeparators(":/images/stop.png");
-//	setStyleSheet("QSlider::handle { image: url(" + path + "); }");
-//	setStyle(aSliderProxy);
+void QMultipleHandleSlider::setRange(const quint64 &min, const quint64 &max, bool handleFollows)
+{
+	Q_ASSERT( min <= max );
+	if( (max != mMaxValue) || (min != mMinValue) )
+	{
+		quint64 oldMax = mMaxValue;
+		quint64 oldMin = mMinValue;
+		mMaxValue = max;
+		mMinValue = min;
+		for( QMultipleHandleSliderHandle *handle : mAltHandles )
+		{
+			if( (handle->value() > mMaxValue) || (handleFollows && (handle->value() == oldMax)) )
+				handle->setValue(mMaxValue);
+			else
+			if( (handle->value() < mMinValue) || (handleFollows && (handle->value() == oldMin)) )
+				handle->setValue(mMinValue);
+			else
+				handle->updateHandlePos_fromValue();
+		}
+	}
 }
 
 void QMultipleHandleSlider::addHandle(const QString &id, const QColor &normalClr, const QColor &hoverClr, const QSize &size)
@@ -276,12 +288,12 @@ void QMultipleHandleSlider::addMiddleHandle(const QString &idA, const QString &i
 	mMiddleHandle->updateView();
 }
 
-double QMultipleHandleSlider::value(const QString &id) const
+quint64 QMultipleHandleSlider::value(const QString &id) const
 {
 	return mAltHandles[id]->value();
 }
 
-void QMultipleHandleSlider::setValue(double value, const QString &id)
+void QMultipleHandleSlider::setValue(quint64 value, const QString &id)
 {
 	mAltHandles[id]->setValue(value);
 }

@@ -69,15 +69,15 @@ ProjectManager::ProjectManager_ErrorCode QTabChartHolder::loadProject(const QStr
 
 		mTimeSlider = new QMultipleHandleSlider(this);
 		mTimeSlider->setObjectName(QString::fromUtf8("timeSlider"));
-		mTimeSlider->setRange(QDateTime::currentSecsSinceEpoch()-10, QDateTime::currentSecsSinceEpoch());
+		mTimeSlider->setRange(QDateTime::currentSecsSinceEpoch()-1, QDateTime::currentSecsSinceEpoch()+1, false);
 
 		QColor clr(Qt::blue);
 
 		mTimeSlider->addHandle( mIniTimeID, clr, clr.lighter(), QSize(14, 25) );
-		mTimeSlider->setValue( QDateTime::currentSecsSinceEpoch()-9, mIniTimeID );
+		mTimeSlider->setValue( QDateTime::currentSecsSinceEpoch()-1, mIniTimeID );
 
 		mTimeSlider->addHandle( mEndTimeID, clr, clr.lighter(), QSize(14, 25) );
-		mTimeSlider->setValue( QDateTime::currentSecsSinceEpoch()-1, mEndTimeID );
+		mTimeSlider->setValue( QDateTime::currentSecsSinceEpoch()+1, mEndTimeID );
 
 		mTimeSlider->addMiddleHandle( mIniTimeID, mEndTimeID, clr.darker(), clr );
 
@@ -188,6 +188,7 @@ QBasicChartWidget *QTabChartHolder::addChart(const QChartConfig &chartConfig, QB
 	chartWidget->setInitialTime(mInitialTime);
 	chartWidget->setTimeRange(mLeftTime, mRightTime);
 	connect( chartWidget, &QBasicChartWidget::dobleClic, this, &QTabChartHolder::editChart );
+	connect( chartWidget, &QBasicChartWidget::endTimeUpdated, this, &QTabChartHolder::onChartEndTimeChanged );
 	return chartWidget;
 }
 
@@ -196,10 +197,23 @@ void QTabChartHolder::onTimeSliderValueChanged(int value, const QString &id)
 	Q_UNUSED(value);
 	Q_UNUSED(id);
 
-	mLeftTime = QDateTime::fromSecsSinceEpoch(mTimeSlider->value(mIniTimeID));
-	mRightTime = QDateTime::fromSecsSinceEpoch(mTimeSlider->value(mEndTimeID));
+	QDateTime minTime = mLeftTime = QDateTime::fromSecsSinceEpoch(mTimeSlider->value(mIniTimeID));
+	QDateTime maxTime = mRightTime = QDateTime::fromSecsSinceEpoch(mTimeSlider->value(mEndTimeID));
 
 	emit timeSliderValueChanged(mLeftTime, mRightTime);
+	if( minTime.toSecsSinceEpoch() == qint64(mTimeSlider->minimum()) )
+		minTime = QDateTime();
+
+	if( maxTime.toSecsSinceEpoch() == qint64(mTimeSlider->maximum()) )
+		maxTime = QDateTime();
+
+	for( QBasicChartWidget *chartWidget : mChartList )
+		chartWidget->setTimeRange(minTime, maxTime);
+}
+
+void QTabChartHolder::onChartEndTimeChanged(const QDateTime &endTime)
+{
+	mTimeSlider->setMaximum(endTime.toSecsSinceEpoch(), true);
 }
 
 QPingChartWidget *QTabChartHolder::addPingChart(const QChartConfig &chartConfig, bool save)
@@ -258,9 +272,4 @@ void QTabChartHolder::closeProject()
 	for( QBasicChartWidget *chart : mChartList )
 		chart->deleteLater();
 	mChartList.clear();
-}
-
-void QTabChartHolder::leftLimitChanged(int newVal)
-{
-
 }

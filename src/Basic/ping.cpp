@@ -22,6 +22,7 @@
 
 #include "ping.h"
 #include <QtDebug>
+#include <QDateTime>
 
 QString ping(QString dst)
 {
@@ -107,12 +108,13 @@ class _WorkerThread : public QThread
 	QVariant mResultData;
 	QString mHostname;
 	QString mID;
-	std::function<void (const QString &, const QVariant &)> mCallbackFnc;
+	std::function<void (const QString &, const QVariant &, const QDateTime &)> mCallbackFnc;
 	QVariant mResult;
 	bool mPaused;
+	QDateTime mStartTime;
 
 protected:
-	void setResult(const QVariant &value)	{ if( !mPaused ) { mResult = value;	mCallbackFnc(mID, value); }		}
+	void setResult(const QVariant &value)	{ if( !mPaused ) { mResult = value;	mCallbackFnc(mID, value, mStartTime); }		}
 
 public:
 	_WorkerThread()
@@ -121,12 +123,13 @@ public:
 	const QString &hostname() const		{ return mHostname;		}
 	const QString &id() const			{ return mID;			}
 
-	void setCallbackFnc(std::function<void (const QString &, const QVariant &)> callback )	{ mCallbackFnc = callback;	}
+	void setCallbackFnc(std::function<void (const QString &, const QVariant &, const QDateTime &)> callback )	{ mCallbackFnc = callback;	}
 	void setHostname(const QString &hostname)	{ mHostname = hostname;	}
 	void setID(const QString &id)				{ mID = id;	}
 
-	void setPaused(bool paused)		{ mPaused = paused;	}
-	bool isPaused() const			{ return mPaused;	}
+	void setPaused(bool paused)			{ mPaused = paused;	}
+	bool isPaused() const				{ return mPaused;	}
+	void start()						{ mStartTime = QDateTime::currentDateTime(); QThread::start();	}
 	const QVariant &result() const		{ return mResult;	}
 };
 
@@ -159,7 +162,7 @@ void removeThreadWork(const QString &id)
 	}
 }
 
-void addAsyncPingDelay(const QString &pingID, const QString &dst, std::function<void(const QString &, const QVariant &)> fnc, bool paused)
+void addAsyncPingDelay(const QString &pingID, const QString &dst, std::function<void(const QString &, const QVariant &, const QDateTime &)> fnc, bool paused)
 {
 	_PingThread *wt = static_cast<_PingThread*>(findWorker(pingID));
 	if( !wt )

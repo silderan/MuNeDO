@@ -44,7 +44,7 @@ QString pongToString(const PongData &pongData);
 QString	ping(QString dst);
 unsigned long pingDelay(QString dst);
 
-void addAsyncPingDelay(const QString &pingID, const QString &dst, std::function<void(const QString &, const QVariant &)> fnc, bool paused);
+void addAsyncPingDelay(const QString &pingID, const QString &dst, std::function<void(const QString &, const QVariant &, const QDateTime &)> fnc, bool paused);
 void removeAsyncPing(const QString &pingID);
 
 void setPaused(const QString &id, bool paused);

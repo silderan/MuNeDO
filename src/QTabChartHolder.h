@@ -58,11 +58,11 @@ Q_OBJECT
 	QString mEndTimeID;
 	QMultipleHandleSlider *mTimeSlider;
 
-	void leftLimitChanged(int newVal);
-
 	QBasicChartWidget *addChart(const QChartConfig &chartConfig, QBasicChartWidget *chartWidget);
 
 	void onTimeSliderValueChanged(int value, const QString &id);
+	void onChartEndTimeChanged(const QDateTime &endTime);
+
 public:
 	QTabChartHolder(QWidget *papi = nullptr);
 

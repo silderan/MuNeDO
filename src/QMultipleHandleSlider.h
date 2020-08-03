@@ -33,7 +33,7 @@ class QMultipleHandleSliderHandle: public QLabel
 	Q_OBJECT
 
 	QString mHandleID;
-	double mValue;
+	quint64 mValue;
 	QPixmap mNormalPixmap;
 	QPixmap mHoverPixmap;
 	int mHandleClickXPixel;
@@ -65,11 +65,11 @@ public:
 
 	const QString &handleID() const		{ return mHandleID;	}
 
-	double value() const	{ return mValue;	}
-	void setValue(double value);
+	quint64 value() const	{ return mValue;	}
+	void setValue(quint64 value);
 
 signals:
-	void valueChanged(double value, const QString &id);
+	void valueChanged(quint64 value, const QString &id);
 	void handleMoved();
 };
 
@@ -104,31 +104,33 @@ class QMultipleHandleSlider: public QFrame
 	Q_OBJECT
 	QMap<QString, QMultipleHandleSliderHandle*> mAltHandles;
 	QMultipleHandleSliderMiddleHandle *mMiddleHandle;
-	double mMaxValue;
-	double mMinValue;
+	quint64 mMaxValue;
+	quint64 mMinValue;
 
 protected:
 	virtual void resizeEvent(QResizeEvent *event) override;
 
-	void onValueChanged(double value, const QString &id);
+	void onValueChanged(quint64 value, const QString &id);
 
 public:
 	QMultipleHandleSlider(QWidget *parent = 0);
 
-	void setRange( double min, double max)	{ mMaxValue = max; mMinValue = min;	}
-	double maximum( ) const { return mMaxValue;	}
-	double minimum( ) const { return mMinValue; }
+	void setRange( const quint64 &min, const quint64 &max, bool handleFollows );
+	void setMaximum( const quint64 &max, bool handleFollows )	{ setRange(mMinValue, max, handleFollows);	}
+	void setMinimum( const quint64 &min, bool handleFollows )	{ setRange(min, mMaxValue, handleFollows);	}
+	const quint64 &maximum( ) const { return mMaxValue;	}
+	const quint64 &minimum( ) const { return mMinValue; }
 
 	void addHandle(const QString &id, const QColor &normalClr, const QColor &hoverClr, const QSize &size);
 	void addMiddleHandle(const QString &idA, const QString &idB, const QColor &normalClr, const QColor &hoverClr);
 
 	void updateHandlePos(QMultipleHandleSliderHandle *handle);
 
-	double value(const QString &id) const;
-	void setValue(double value, const QString &id = QString());
+	quint64 value(const QString &id) const;
+	void setValue(quint64 value, const QString &id = QString());
 
 signals:
-	void valueChanged(double, const QString &id = "");
+	void valueChanged(quint64, const QString &id = "");
 };
 
 #endif // QMULTIPLEHANDLESLIDER_H

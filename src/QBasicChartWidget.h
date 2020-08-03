@@ -251,8 +251,8 @@ public:
 	QChartLine &addLine(const QLineConfig &lineConfig, bool isOld, bool paused);
 	void delLine(const QLineConfig &lineConfig);
 
-	void addValue(const QString &lineID, unsigned long value);
-	void onResult(const QString &id, const QVariant &result)	{ addValue(id, result.toUInt()); }
+	void addValue(const QString &lineID, unsigned long value, const QDateTime &time);
+	void onResult(const QString &id, const QVariant &result, const QDateTime &time)	{ addValue(id, result.toUInt(), time); }
 
 	void setInitialTime(const QDateTime &initialTime);
 	void setPaused(bool paused);
@@ -279,7 +279,7 @@ protected:
 public:
 	QBasicChartWidget(QTabChartHolder *chartHolder, const QString &chartType);
 
-	QBasicChart *chart()				{ return mChart;	}
+//	QBasicChart *chart()				{ return mChart;	}
 	const QBasicChart *chart() const	{ return mChart;	}
 
 	QChartConfig getChartConfig() const			{ return chart()->getChartConfig();	}
@@ -297,8 +297,8 @@ public:
 
 	int linesCount() const						{ return mChart->linesCount();	}
 
-	virtual QChartLine &addChartLine(const QLineConfig &lineConfig, bool isOld, bool paused)	{ return chart()->addLine(lineConfig, isOld, paused);	}
-	virtual void delChartLine(const QLineConfig &lineConfig)									{ chart()->delLine(lineConfig);							}
+	virtual QChartLine &addChartLine(const QLineConfig &lineConfig, bool isOld, bool paused)	{ return mChart->addLine(lineConfig, isOld, paused);	}
+	virtual void delChartLine(const QLineConfig &lineConfig)									{ mChart->delLine(lineConfig);							}
 
 	void setInitialTime(const QDateTime &initialTime)		{ mChart->setInitialTime(initialTime);	}
 	void setPaused(bool paused)								{ mChart->setPaused(paused);			}
@@ -309,8 +309,10 @@ public:
 	void setMaxY(long long maxY)												{ mChart->setMaxY(maxY);	}
 	void deleteLater();
 
+	void onResult(const QString &id, const QVariant &value, const QDateTime &time);
 signals:
 	void dobleClic(QBasicChartWidget *chartWidget);
 	void rightClic(QBasicChartWidget *chartWidget);
+	void endTimeUpdated( const QDateTime &endTime );
 };
 #endif // QBASICCHARTWIDGET_H

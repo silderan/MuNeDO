@@ -27,7 +27,7 @@
 QChartLine &QPingChartWidget::addChartLine(const QLineConfig &lineConfig, bool isOld, bool paused)
 {
 	QChartLine &line = QBasicChartWidget::addChartLine(lineConfig, isOld, paused);
-	addAsyncPingDelay(lineConfig.mID, lineConfig.mRemoteHost, [this](const QString &id, const QVariant &val) {this->chart()->onResult(id, val);}, paused );
+	addAsyncPingDelay(lineConfig.mID, lineConfig.mRemoteHost, [this](const QString &id, const QVariant &val, const QDateTime &time) {onResult(id, val, time);}, paused );
 	return line;
 }
 
