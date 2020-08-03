@@ -73,7 +73,7 @@ void QMultipleHandleSliderHandle::moveHandeToPos(int pos)
 	int maxSliderPixel = maxHandleXPos();
 
 	// That is for center handle in the slider.
-	int newValue;
+	quint64 newValue;
 
 	QPoint handlePossition = QPoint(pos - mHandleClickXPixel, handleYPos() );
 
@@ -142,7 +142,7 @@ void QMultipleHandleSliderHandle::drawHandle(QPixmap &pixmap, bool rounded, cons
 	if( rounded )
 	{
 		QPainterPath path;
-		path.addRoundedRect( QRectF(0, 0, pixmap.width(), pixmap.height()), 10, 10);
+		path.addRoundedRect( QRectF(0, 0, pixmap.width(), pixmap.height()), 5, 5);
 		QPen pen(Qt::black, 1);
 		p.setPen(pen);
 		p.fillPath(path, clr);
@@ -170,6 +170,7 @@ bool QMultipleHandleSliderHandle::event(QEvent *ev)
 	{
 	case QEvent::Move:
 		emit handleMoved();
+		return true;
 	case QEvent::MouseMove:
 		if( handled() )
 		{
@@ -340,7 +341,7 @@ void QMultipleHandleSliderMiddleHandle::updateView()
 		geo.setHeight( mHandleA->height()-8 );
 		resize(geo.size());
 		move( geo.x(), geo.y() );
-		qDebug() << geo;
+//		qDebug() << geo;
 		createHandlePixmaps(mNormalClr, mHoverClr, false);
 		setNormalColor();
 	}

@@ -1,4 +1,10 @@
 TODO List.
 
-Only one x axis (time) shall be shown.
+IMPROVEMENT: Only one x axis (time) shall be shown (the buttomest one, when there is more than one chart)
 
+BUG: Removing line while thread is runing, crash!
+BUG: Slider allows cros max and minimum handles
+BUG: Inter handles handle moves more than handles when moving it to limits.
+BUG: Inter handles handle doesn't paint completly fine when it's moved by mouse.
+
+IMPROVEMENT: Middle slider line should be drawn.

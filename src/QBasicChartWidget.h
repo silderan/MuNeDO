@@ -262,6 +262,8 @@ public:
 	// If lastTime is invalid, it defaults to currentTime.
 	void setTimes(const QDateTime &firstTime, const QDateTime &lastTime);
 	void setMaxY(long long maxY);
+
+	friend class QBasicChartWidget;
 };
 
 class QTabChartHolder;
@@ -310,6 +312,8 @@ public:
 	void deleteLater();
 
 	void onResult(const QString &id, const QVariant &value, const QDateTime &time);
+	void updateChartMaxAxis()	{ return mChart->updateChartMaxAxis();	}
+
 signals:
 	void dobleClic(QBasicChartWidget *chartWidget);
 	void rightClic(QBasicChartWidget *chartWidget);

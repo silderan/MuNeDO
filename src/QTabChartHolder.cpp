@@ -208,7 +208,10 @@ void QTabChartHolder::onTimeSliderValueChanged(int value, const QString &id)
 		maxTime = QDateTime();
 
 	for( QBasicChartWidget *chartWidget : mChartList )
+	{
 		chartWidget->setTimeRange(minTime, maxTime);
+		chartWidget->updateChartMaxAxis();
+	}
 }
 
 void QTabChartHolder::onChartEndTimeChanged(const QDateTime &endTime)
