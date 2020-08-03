@@ -225,6 +225,15 @@ void QMultipleHandleSlider::resizeEvent(QResizeEvent *event)
 		mMiddleHandle->updateView();
 }
 
+void QMultipleHandleSlider::paintEvent(QPaintEvent *event)
+{
+	QPainter p(this);
+	p.setPen( QColor(0,0,0,64) );
+	p.drawLine( 0, height()/2, width(), height()/2 );
+	p.drawLine( 0, height()/2 - 1, width(), height()/2 - 1 );
+	p.drawLine( 0, height()/2 + 1, width(), height()/2 + 1 );
+}
+
 void QMultipleHandleSlider::onValueChanged(quint64 value, const QString &id)
 {
 	Q_UNUSED(value);

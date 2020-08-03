@@ -109,6 +109,7 @@ class QMultipleHandleSlider: public QFrame
 
 protected:
 	virtual void resizeEvent(QResizeEvent *event) override;
+	virtual void paintEvent(QPaintEvent *event) override;
 
 	void onValueChanged(quint64 value, const QString &id);
 
