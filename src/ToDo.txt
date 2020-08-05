@@ -1,10 +1,12 @@
 TODO List.
 
 IMPROVEMENT: Only one x axis (time) shall be shown (the buttomest one, when there is more than one chart)
+IMPROVEMENT: Double clic on handlers go to maximum or minimum.
+IMPROVEMENT: Hide graphs but still gathering data
+IMPROVEMENT: Hide app without closing.
 
 BUG: Removing line while thread is runing, crash!
 BUG: Slider allows cros max and minimum handles
 BUG: Inter handles handle moves more than handles when moving it to limits.
 BUG: Inter handles handle doesn't paint completly fine when it's moved by mouse.
-
-IMPROVEMENT: Middle slider line should be drawn.
+BUG: Initial time in slider is not the same as graph. Slider's ini time is timeStamp from program starts.

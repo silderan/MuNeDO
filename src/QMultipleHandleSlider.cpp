@@ -44,20 +44,25 @@ public:
 	}
 };
 
-int QMultipleHandleSliderHandle::minHandleXPos()
+int QMultipleHandleSliderHandle::minHandleXPos(bool limitedByOthers) const
 {
-	return 0;
+	return parentSlider()->minHandleXPos(*this, limitedByOthers);
 }
 
-int QMultipleHandleSliderHandle::maxHandleXPos()
+int QMultipleHandleSliderHandle::maxHandleXPos(bool limitedByOthers) const
 {
-	return parentSlider()->width() - width();
+	return parentSlider()->maxHandleXPos(*this, limitedByOthers);
 }
 
 int QMultipleHandleSliderHandle::handleYPos()
 {
 	// That is for center handle in the slider.
 	return (parentSlider()->height() - height()) / 2;
+}
+
+int QMultipleHandleSliderHandle::checkValidValue(int value)
+{
+	return parentSlider()->checkValidValue(this, value);
 }
 
 void QMultipleHandleSliderHandle::handleFollowMouse()
@@ -69,23 +74,23 @@ void QMultipleHandleSliderHandle::handleFollowMouse()
 // This funcion recalculates value and emits valueChange if necessary.
 void QMultipleHandleSliderHandle::moveHandeToPos(int pos)
 {
-	int minSliderPixel = minHandleXPos();
-	int maxSliderPixel = maxHandleXPos();
+	int absoluteMinSliderPixel = minHandleXPos(true);
+	int absoluteMaxSliderPixel = maxHandleXPos(true);
 
 	// That is for center handle in the slider.
-	quint64 newValue;
+	int newValue;
 
 	QPoint handlePossition = QPoint(pos - mHandleClickXPixel, handleYPos() );
 
-	if( handlePossition.x() >= maxSliderPixel )
+	if( handlePossition.x() >= absoluteMaxSliderPixel )
 	{
-		handlePossition.setX( maxSliderPixel );
+		handlePossition.setX( absoluteMaxSliderPixel );
 		newValue = parentSlider()->maximum();
 	}
 	else
-	if( handlePossition.x() <= minSliderPixel )
+	if( handlePossition.x() <= absoluteMinSliderPixel )
 	{
-		handlePossition.setX( minSliderPixel );
+		handlePossition.setX( absoluteMinSliderPixel );
 		newValue = parentSlider()->minimum();
 	}
 	else
@@ -93,9 +98,10 @@ void QMultipleHandleSliderHandle::moveHandeToPos(int pos)
 		// This both are the same formula but second one is reduced.
 //		float percentage = (100.0 * handlePossition.x()) / float(maxSliderPixel-minSliderPixel);
 //		newValue = int(percentage * (parentSlider()->maximum() - parentSlider()->minimum()) / (100.0)) + parentSlider()->minimum();
-		newValue = (handlePossition.x() * (parentSlider()->maximum() - parentSlider()->minimum()) / (maxSliderPixel-minSliderPixel)) + parentSlider()->minimum() ;
+		newValue = (handlePossition.x() * (parentSlider()->maximum() - parentSlider()->minimum()) / (absoluteMaxSliderPixel-absoluteMinSliderPixel)) + parentSlider()->minimum() ;
 	}
 
+	newValue = checkValidValue(newValue);
 	move( handlePossition );
 	if( newValue != mValue )
 	{
@@ -107,10 +113,10 @@ void QMultipleHandleSliderHandle::moveHandeToPos(int pos)
 // Invoqued when parent slider changes size.
 void QMultipleHandleSliderHandle::updateHandlePos_fromValue()
 {
-	int minSliderPixel = minHandleXPos();
-	int maxSliderPixel = maxHandleXPos();
+	int minSliderPixel = minHandleXPos(false);
+	int maxSliderPixel = maxHandleXPos(false);
 
-	int location = (((mValue-parentSlider()->minimum()) * maxSliderPixel) / (parentSlider()->maximum() - parentSlider()->minimum())) + minSliderPixel;
+	int location = (((mValue-parentSlider()->minimum()) * maxSliderPixel) / (parentSlider()->maximum() - parentSlider()->minimum()));
 
 	move( location, handleYPos() );
 }
@@ -209,7 +215,7 @@ QMultipleHandleSliderHandle::QMultipleHandleSliderHandle(QMultipleHandleSlider *
 	setNormalColor();
 }
 
-void QMultipleHandleSliderHandle::setValue(quint64 value)
+void QMultipleHandleSliderHandle::setValue(int value)
 {
 	mValue = value;
 	updateHandlePos_fromValue();
@@ -234,13 +240,64 @@ void QMultipleHandleSlider::paintEvent(QPaintEvent *event)
 	p.drawLine( 0, height()/2 + 1, width(), height()/2 + 1 );
 }
 
-void QMultipleHandleSlider::onValueChanged(quint64 value, const QString &id)
+void QMultipleHandleSlider::onValueChanged(int value, const QString &id)
 {
 	Q_UNUSED(value);
 	Q_UNUSED(id);
 	if( mMiddleHandle )
 		mMiddleHandle->updateView();
 	emit valueChanged(value, id);
+}
+
+int QMultipleHandleSlider::maxHandleXPos(const QMultipleHandleSliderHandle &handle, bool limitedByOthers) const
+{
+	if( !mMiddleHandle )
+		return width() - handle.width();
+
+	if( !limitedByOthers )
+	{
+		if( &handle == mMiddleHandle->mHandleA )
+			return width() - handle.width() - mMiddleHandle->mHandleB->width();
+		return width() - handle.width();
+	}
+	if( &handle == mMiddleHandle->mHandleA )
+		return mMiddleHandle->mHandleB->pos().x() - handle.width();
+	return width() - handle.width();
+}
+
+int QMultipleHandleSlider::minHandleXPos(const QMultipleHandleSliderHandle &handle, bool limitedByOthers) const
+{
+	if( !mMiddleHandle )
+		return 0;
+
+	if( !limitedByOthers )
+	{
+		if( &handle == mMiddleHandle->mHandleB )
+			return mMiddleHandle->mHandleA->width();
+		return 0;
+	}
+	if( &handle == mMiddleHandle->mHandleB )
+		return mMiddleHandle->mHandleA->pos().x() + mMiddleHandle->mHandleA->width();
+	return 0;
+}
+
+int QMultipleHandleSlider::checkValidValue(const QMultipleHandleSliderHandle *handle, int value)
+{
+	int max = maximum();
+	int min = minimum();
+
+	if( mMiddleHandle )
+	{
+		if( handle == mMiddleHandle->mHandleA )
+			max = mMiddleHandle->mHandleB->value()-1;
+		else
+		if( handle == mMiddleHandle->mHandleB )
+			min = mMiddleHandle->mHandleA->value()+1;
+	}
+
+	if( value > max )		value = max;
+	if( value < min )		value = min;
+	return value;
 }
 
 QMultipleHandleSlider::QMultipleHandleSlider(QWidget *parent)
@@ -252,13 +309,13 @@ QMultipleHandleSlider::QMultipleHandleSlider(QWidget *parent)
 	setFrameShadow(QFrame::Sunken);
 }
 
-void QMultipleHandleSlider::setRange(const quint64 &min, const quint64 &max, bool handleFollows)
+void QMultipleHandleSlider::setRange(const int &min, const int &max, bool handleFollows)
 {
 	Q_ASSERT( min <= max );
 	if( (max != mMaxValue) || (min != mMinValue) )
 	{
-		quint64 oldMax = mMaxValue;
-		quint64 oldMin = mMinValue;
+		int oldMax = mMaxValue;
+		int oldMin = mMinValue;
 		mMaxValue = max;
 		mMinValue = min;
 		for( QMultipleHandleSliderHandle *handle : mAltHandles )
@@ -298,12 +355,12 @@ void QMultipleHandleSlider::addMiddleHandle(const QString &idA, const QString &i
 	mMiddleHandle->updateView();
 }
 
-quint64 QMultipleHandleSlider::value(const QString &id) const
+int QMultipleHandleSlider::value(const QString &id) const
 {
 	return mAltHandles[id]->value();
 }
 
-void QMultipleHandleSlider::setValue(quint64 value, const QString &id)
+void QMultipleHandleSlider::setValue(int value, const QString &id)
 {
 	mAltHandles[id]->setValue(value);
 }

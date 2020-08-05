@@ -33,7 +33,7 @@ class QMultipleHandleSliderHandle: public QLabel
 	Q_OBJECT
 
 	QString mHandleID;
-	quint64 mValue;
+	int mValue;
 	QPixmap mNormalPixmap;
 	QPixmap mHoverPixmap;
 	int mHandleClickXPixel;
@@ -49,10 +49,11 @@ protected:
 	virtual bool event(QEvent *ev) override;
 	static void drawHandle(QPixmap &pixmap, bool rounded, const QColor &clr);
 
-	virtual int minHandleXPos();
-	virtual int maxHandleXPos();
+	virtual int minHandleXPos(bool limitedByOthers) const;
+	virtual int maxHandleXPos(bool limitedByOthers) const;
 	int handleYPos();
 
+	int checkValidValue(int value);
 public:
 	void moveHandeToPos(int pos);
 
@@ -65,12 +66,14 @@ public:
 
 	const QString &handleID() const		{ return mHandleID;	}
 
-	quint64 value() const	{ return mValue;	}
-	void setValue(quint64 value);
+	int value() const	{ return mValue;	}
+	void setValue(int value);
 
 signals:
-	void valueChanged(quint64 value, const QString &id);
+	void valueChanged(int value, const QString &id);
 	void handleMoved();
+
+	friend class QMultipleHandleSlider;
 };
 
 class QMultipleHandleSliderMiddleHandle : public QMultipleHandleSliderHandle
@@ -97,6 +100,7 @@ public:
 	void setHandles( QMultipleHandleSliderHandle *a, QMultipleHandleSliderHandle *b )	{ mHandleA = a; mHandleB = b;	}
 
 	void updateView();
+	friend class QMultipleHandleSlider;
 };
 
 class QMultipleHandleSlider: public QFrame
@@ -104,34 +108,41 @@ class QMultipleHandleSlider: public QFrame
 	Q_OBJECT
 	QMap<QString, QMultipleHandleSliderHandle*> mAltHandles;
 	QMultipleHandleSliderMiddleHandle *mMiddleHandle;
-	quint64 mMaxValue;
-	quint64 mMinValue;
+	int mMaxValue;
+	int mMinValue;
 
 protected:
 	virtual void resizeEvent(QResizeEvent *event) override;
 	virtual void paintEvent(QPaintEvent *event) override;
 
-	void onValueChanged(quint64 value, const QString &id);
+	void onValueChanged(int value, const QString &id);
+
+	int maxHandleXPos(const QMultipleHandleSliderHandle &handle, bool limitedByOthers)const;
+	int minHandleXPos(const QMultipleHandleSliderHandle &handle, bool limitedByOthers)const;
+
+	int checkValidValue(const QMultipleHandleSliderHandle *handle, int value);
 
 public:
 	QMultipleHandleSlider(QWidget *parent = 0);
 
-	void setRange( const quint64 &min, const quint64 &max, bool handleFollows );
-	void setMaximum( const quint64 &max, bool handleFollows )	{ setRange(mMinValue, max, handleFollows);	}
-	void setMinimum( const quint64 &min, bool handleFollows )	{ setRange(min, mMaxValue, handleFollows);	}
-	const quint64 &maximum( ) const { return mMaxValue;	}
-	const quint64 &minimum( ) const { return mMinValue; }
+	void setRange( const int &min, const int &max, bool handleFollows );
+	void setMaximum( const int &max, bool handleFollows )	{ setRange(mMinValue, max, handleFollows);	}
+	void setMinimum( const int &min, bool handleFollows )	{ setRange(min, mMaxValue, handleFollows);	}
+	const int &maximum( ) const { return mMaxValue;	}
+	const int &minimum( ) const { return mMinValue; }
 
 	void addHandle(const QString &id, const QColor &normalClr, const QColor &hoverClr, const QSize &size);
 	void addMiddleHandle(const QString &idA, const QString &idB, const QColor &normalClr, const QColor &hoverClr);
 
 	void updateHandlePos(QMultipleHandleSliderHandle *handle);
 
-	quint64 value(const QString &id) const;
-	void setValue(quint64 value, const QString &id = QString());
+	int value(const QString &id) const;
+	void setValue(int value, const QString &id = QString());
 
 signals:
-	void valueChanged(quint64, const QString &id = "");
+	void valueChanged(int, const QString &id = "");
+
+	friend class QMultipleHandleSliderHandle;
 };
 
 #endif // QMULTIPLEHANDLESLIDER_H
