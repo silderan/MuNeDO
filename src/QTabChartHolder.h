@@ -44,16 +44,12 @@ Q_OBJECT
 	QVBoxLayout *verticalLayout;
 	QScrollArea *scrollArea;
 	QWidget *scrollAreaWidgetContents;
-	QSlider *iniTimeSlider;
 	QList<QBasicChartWidget*> mChartList;
 	QToolButton *playButton;
 
 	ProjectManager mProjectManager;
 	QAction *mAddChartAction;
 	bool mPlaying;
-	QDateTime mInitialTime;
-	QDateTime mLeftTime;
-	QDateTime mRightTime;
 	QString mIniTimeID;
 	QString mEndTimeID;
 	QMultipleHandleSlider *mTimeSlider;

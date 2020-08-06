@@ -222,19 +222,19 @@ class QBasicChart : public _qCharts
 	QString mChartType;
 	QString mChartID;
 	QString mChartName;
-	QDateTime mInitialTime;	// Initial Time for x axis.
-	QDateTime leftLimit;	// Right limit for x axis.
+	QDateTime leftLimit;	// Left limit for x axis.
 	QDateTime rightLimit;	// Right limit for x axis.
+	bool mFollowTimeOnAddValue;
 
 protected:
 	void updateChartMaxAxis();
 	void setValueRange(const qreal &min, const qreal &max);
-	void setTimeRange(const qreal &minMSec, const qreal &maxMSec);
-	void setTimeRange(const QDateTime &minTime, const QDateTime &maxTime);
 
 public:
 	QBasicChart(const QString &chartType, QGraphicsItem *parent = Q_NULLPTR, Qt::WindowFlags wFlags = Qt::Widget);
 
+	void setFollowTimeOnAddValue(bool follow)	{ mFollowTimeOnAddValue = follow;	}
+	bool followTimeOnAddValue(void) const		{ return mFollowTimeOnAddValue;		}
 
 	const QChartLineList &chartLines() const	{ return lines;	}
 	QChartLineList &chartLines()				{ return lines;	}
@@ -254,13 +254,12 @@ public:
 	void addValue(const QString &lineID, unsigned long value, const QDateTime &time);
 	void onResult(const QString &id, const QVariant &result, const QDateTime &time)	{ addValue(id, result.toUInt(), time); }
 
-	void setInitialTime(const QDateTime &initialTime);
 	void setPaused(bool paused);
 
 	// Set times to be shown in chart.
 	// If firstTime is invalid, it defaults to initialTime
 	// If lastTime is invalid, it defaults to currentTime.
-	void setTimes(const QDateTime &firstTime, const QDateTime &lastTime);
+	void setTimeRange(const QDateTime &firstTime, const QDateTime &lastTime);
 	void setMaxY(long long maxY);
 
 	friend class QBasicChartWidget;
@@ -302,17 +301,19 @@ public:
 	virtual QChartLine &addChartLine(const QLineConfig &lineConfig, bool isOld, bool paused)	{ return mChart->addLine(lineConfig, isOld, paused);	}
 	virtual void delChartLine(const QLineConfig &lineConfig)									{ mChart->delLine(lineConfig);							}
 
-	void setInitialTime(const QDateTime &initialTime)		{ mChart->setInitialTime(initialTime);	}
 	void setPaused(bool paused)								{ mChart->setPaused(paused);			}
 	// Set times to be shown in chart.
 	// If firstTime is invalid, it defaults to initialTime
 	// If lastTime is invalid, it defaults to currentTime.
-	void setTimeRange(const QDateTime &firstTime, const QDateTime &lastTime)	{ mChart->setTimes(firstTime, lastTime);	}
+	void setTimeRange(const QDateTime &firstTime, const QDateTime &lastTime)	{ mChart->setTimeRange(firstTime, lastTime);	}
 	void setMaxY(long long maxY)												{ mChart->setMaxY(maxY);	}
 	void deleteLater();
 
 	void onResult(const QString &id, const QVariant &value, const QDateTime &time);
 	void updateChartMaxAxis()	{ return mChart->updateChartMaxAxis();	}
+
+	void setFollowTimeOnAddValue(bool follow)	{ mChart->setFollowTimeOnAddValue(follow);	}
+	bool followTimeOnAddValue(void) const		{ return mChart->followTimeOnAddValue();	}
 
 signals:
 	void dobleClic(QBasicChartWidget *chartWidget);

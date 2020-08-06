@@ -35,7 +35,6 @@ QTabChartHolder::QTabChartHolder(QWidget *papi)
 	, verticalLayout(Q_NULLPTR)
 	, scrollArea(Q_NULLPTR)
 	, scrollAreaWidgetContents(Q_NULLPTR)
-	, iniTimeSlider(Q_NULLPTR)
 	, playButton(Q_NULLPTR)
 	, mProjectManager("")
 	, mAddChartAction( new QAction( tr("Añadir Gráfica"), this) )
@@ -69,15 +68,15 @@ ProjectManager::ProjectManager_ErrorCode QTabChartHolder::loadProject(const QStr
 
 		mTimeSlider = new QMultipleHandleSlider(this);
 		mTimeSlider->setObjectName(QString::fromUtf8("timeSlider"));
-		mTimeSlider->setRange(QDateTime::currentSecsSinceEpoch()-1, QDateTime::currentSecsSinceEpoch()+1, false);
+		mTimeSlider->setRange(QDateTime::currentSecsSinceEpoch()-1, QDateTime::currentSecsSinceEpoch(), false);
 
 		QColor clr(Qt::blue);
 
 		mTimeSlider->addHandle( mIniTimeID, clr, clr.lighter(), QSize(14, 25) );
-		mTimeSlider->setValue( QDateTime::currentSecsSinceEpoch()-1, mIniTimeID );
+		mTimeSlider->setValue( mTimeSlider->minimum(), mIniTimeID );
 
 		mTimeSlider->addHandle( mEndTimeID, clr, clr.lighter(), QSize(14, 25) );
-		mTimeSlider->setValue( QDateTime::currentSecsSinceEpoch()+1, mEndTimeID );
+		mTimeSlider->setValue( mTimeSlider->maximum(), mEndTimeID );
 
 		mTimeSlider->addMiddleHandle( mIniTimeID, mEndTimeID, clr.darker(), clr );
 
@@ -172,21 +171,22 @@ void QTabChartHolder::loadSeries()
 		}
 		if( maxX == minX )
 			maxX+= 1000;
-		chart->setInitialTime( mInitialTime = QDateTime::fromMSecsSinceEpoch(minX) );
+		chart->setTimeRange( QDateTime::fromMSecsSinceEpoch(minX), QDateTime::fromMSecsSinceEpoch(maxX) );
 		chart->setMaxY(maxY);
 	}
 }
 
 QBasicChartWidget *QTabChartHolder::addChart(const QChartConfig &chartConfig, QBasicChartWidget *chartWidget)
 {
+	chartWidget->setTimeRange( QDateTime::fromSecsSinceEpoch(mTimeSlider->minimum()), QDateTime::fromSecsSinceEpoch(mTimeSlider->maximum()) );
+	chartWidget->setFollowTimeOnAddValue( mTimeSlider->value(mEndTimeID) == mTimeSlider->maximum() );
+
 	chartWidget->setMinimumHeight(200);
 	verticalLayout->addWidget(chartWidget);
 	mChartList.append(chartWidget);
 	chartWidget->setChartID(chartConfig.mChartID);
 	chartWidget->setChartName(chartConfig.mChartName);
 
-	chartWidget->setInitialTime(mInitialTime);
-	chartWidget->setTimeRange(mLeftTime, mRightTime);
 	connect( chartWidget, &QBasicChartWidget::dobleClic, this, &QTabChartHolder::editChart );
 	connect( chartWidget, &QBasicChartWidget::endTimeUpdated, this, &QTabChartHolder::onChartEndTimeChanged );
 	return chartWidget;
@@ -197,18 +197,16 @@ void QTabChartHolder::onTimeSliderValueChanged(int value, const QString &id)
 	Q_UNUSED(value);
 	Q_UNUSED(id);
 
-	QDateTime minTime = mLeftTime = QDateTime::fromSecsSinceEpoch(mTimeSlider->value(mIniTimeID));
-	QDateTime maxTime = mRightTime = QDateTime::fromSecsSinceEpoch(mTimeSlider->value(mEndTimeID));
+	QDateTime minTime = QDateTime::fromSecsSinceEpoch(mTimeSlider->value(mIniTimeID));
+	QDateTime maxTime = QDateTime::fromSecsSinceEpoch(mTimeSlider->value(mEndTimeID));
 
-	emit timeSliderValueChanged(mLeftTime, mRightTime);
-	if( minTime.toSecsSinceEpoch() == qint64(mTimeSlider->minimum()) )
-		minTime = QDateTime();
+	emit timeSliderValueChanged(minTime, maxTime);
 
-	if( maxTime.toSecsSinceEpoch() == qint64(mTimeSlider->maximum()) )
-		maxTime = QDateTime();
+	bool followTime = maxTime.toSecsSinceEpoch() == mTimeSlider->maximum();
 
 	for( QBasicChartWidget *chartWidget : mChartList )
 	{
+		chartWidget->setFollowTimeOnAddValue(followTime);
 		chartWidget->setTimeRange(minTime, maxTime);
 		chartWidget->updateChartMaxAxis();
 	}
@@ -222,7 +220,7 @@ void QTabChartHolder::onChartEndTimeChanged(const QDateTime &endTime)
 QPingChartWidget *QTabChartHolder::addPingChart(const QChartConfig &chartConfig, bool save)
 {
 	QPingChartWidget *chartWidget = new QPingChartWidget(this);
-	chartWidget->setObjectName(QString::fromUtf8("PingChart"));
+	chartWidget->setObjectName( QString::fromUtf8("PingChart") );
 	addChart(chartConfig, static_cast<QBasicChartWidget*>(chartWidget));
 
 	for( const QLineConfig &lineConfig : chartConfig.mLines )
@@ -248,14 +246,8 @@ void QTabChartHolder::togglePlaying()
 	if( !mPlaying )
 	{
 		mPlaying = true;
-		if( !mInitialTime.isValid() )
-			mLeftTime = mInitialTime = QDateTime::currentDateTime();
-
 		for( QBasicChartWidget *chart : mChartList )
-		{
-			chart->setInitialTime(mInitialTime);
 			chart->setPaused(false);
-		}
 		playButton->setIcon(QIcon(":/images/stop.png"));
 	}
 	else

@@ -105,6 +105,7 @@ bool QChartConfig::containsLine(const QString &lineID) const
 QBasicChart::QBasicChart(const QString &chartType, QGraphicsItem *parent, Qt::WindowFlags wFlags)
 	: QChart(QChart::ChartTypeCartesian, parent, wFlags)
 	, mChartType(chartType)
+	, mFollowTimeOnAddValue(true)
 {
 	setMargins( QMargins() );
 }
@@ -126,6 +127,7 @@ QChartConfig QBasicChart::getChartConfig() const
 QChartLine &QBasicChart::addLine(const QLineConfig &lineConfig, bool isOld, bool paused)
 {
 	Q_UNUSED(paused);
+
 	if( !isOld )
 	{
 		QChartLine &line = lines[lineConfig.mID];
@@ -164,8 +166,7 @@ QChartLine &QBasicChart::addLine(const QLineConfig &lineConfig, bool isOld, bool
 	line.setLabel(line.mLabel);
 	line.setColor(line.mLineColor);
 
-	line.axisX->setRange( leftLimit.isValid() ? leftLimit : mInitialTime.isValid() ? mInitialTime : QDateTime::currentDateTime(),
-						  rightLimit.isValid() ? rightLimit : QDateTime::currentDateTime().addMSecs(1) );
+	line.axisX->setRange( leftLimit, rightLimit );
 
 	// If it's the first line, it must be visible. The other ones must be hiden.
 	if( lines.count() != 1 )
@@ -202,9 +203,11 @@ void QBasicChart::delLine(const QLineConfig &lineConfig)
 // This updates Y axis values acordigly to the visible values.
 void QBasicChart::updateChartMaxAxis()
 {
+	Q_ASSERT( leftLimit.isValid() );
+	Q_ASSERT( rightLimit.isValid() );
 	qreal newMax = 0;
-	qreal minTime = leftLimit.isValid() ? leftLimit.toMSecsSinceEpoch() : 0;
-	qreal maxTime = rightLimit.isValid() ? rightLimit.toMSecsSinceEpoch() : QDateTime::currentMSecsSinceEpoch();
+	qreal minTime = leftLimit.toMSecsSinceEpoch();
+	qreal maxTime = rightLimit.toMSecsSinceEpoch();
 	qreal curTime;
 	for( const QChartLine &line : lines )
 	{
@@ -227,17 +230,6 @@ void QBasicChart::setValueRange(const qreal &min, const qreal &max)
 		line.axisY->setRange(min, max);
 }
 
-void QBasicChart::setTimeRange(const qreal &minMSec, const qreal &maxMSec)
-{
-	setTimeRange( QDateTime::fromMSecsSinceEpoch(qint64(minMSec)), QDateTime::fromMSecsSinceEpoch(qint64(maxMSec)) );
-}
-
-void QBasicChart::setTimeRange(const QDateTime &minTime, const QDateTime &maxTime)
-{
-	for( QChartLine &line : lines )
-		line.axisX->setRange( minTime, maxTime );
-}
-
 void QBasicChart::addValue(const QString &lineID, unsigned long value, const QDateTime &time)
 {
 	if( !lines.contains(lineID) )
@@ -253,19 +245,9 @@ void QBasicChart::addValue(const QString &lineID, unsigned long value, const QDa
 	{
 		if( value > line.axisY->max() )
 			line.axisY->setMax(value);
-		if( !rightLimit.isValid() )
-			line.axisX->setMax(time);
-	}
-}
 
-void QBasicChart::setInitialTime(const QDateTime &initialTime)
-{
-	if( mInitialTime != initialTime )
-	{
-		mInitialTime = initialTime;
-		Q_ASSERT(mInitialTime.isValid());
-		for( QChartLine &line : lines )
-			line.axisX->setMin(initialTime);
+		if( !rightLimit.isValid() || mFollowTimeOnAddValue )
+			line.axisX->setMax(rightLimit = time);
 	}
 }
 
@@ -275,13 +257,14 @@ void QBasicChart::setPaused(bool paused)
 		setThreadPaused(line.mID, paused);
 }
 
-void QBasicChart::setTimes(const QDateTime &firstTime, const QDateTime &lastTime)
+void QBasicChart::setTimeRange(const QDateTime &firstTime, const QDateTime &lastTime)
 {
-	leftLimit = firstTime.isValid() ? firstTime : mInitialTime;
+	qDebug() << "setTimeRange(" << firstTime.toString() << ", " << lastTime.toString() << ")";
+	leftLimit = firstTime;
 	rightLimit = lastTime;
 
 	for( QChartLine &line : lines )
-		line.axisX->setRange( leftLimit, rightLimit.isValid() ? rightLimit : QDateTime::currentDateTime() );
+		line.axisX->setRange( leftLimit, rightLimit );
 }
 
 void QBasicChart::setMaxY(long long maxY)

@@ -71,38 +71,31 @@ void QMultipleHandleSliderHandle::handleFollowMouse()
 }
 
 // Move hande to position relative to its parent.
-// This funcion recalculates value and emits valueChange if necessary.
+// This functions fits perfecly when handle must follow the mouse.
+// pos parameter is the position of the mouse relative to slider (not global possition)
+// This funcion also recalculates value and emits valueChange if necessary.
 void QMultipleHandleSliderHandle::moveHandeToPos(int pos)
 {
-	int absoluteMinSliderPixel = minHandleXPos(true);
-	int absoluteMaxSliderPixel = maxHandleXPos(true);
+	int absoluteMinSliderPixel = minHandleXPos(false);
+	int relativeMinSliderPixel = minHandleXPos(true);
+	int absoluteMaxSliderPixel = maxHandleXPos(false);
+	int relativeMaxSliderPixel = maxHandleXPos(true);
 
-	// That is for center handle in the slider.
-	int newValue;
+	// This is for acurate movement from clicked point.
+	pos -= mHandleClickXPixel;
 
-	QPoint handlePossition = QPoint(pos - mHandleClickXPixel, handleYPos() );
-
-	if( handlePossition.x() >= absoluteMaxSliderPixel )
-	{
-		handlePossition.setX( absoluteMaxSliderPixel );
-		newValue = parentSlider()->maximum();
-	}
+	if( pos > relativeMaxSliderPixel )
+		pos = relativeMaxSliderPixel;
 	else
-	if( handlePossition.x() <= absoluteMinSliderPixel )
-	{
-		handlePossition.setX( absoluteMinSliderPixel );
-		newValue = parentSlider()->minimum();
-	}
-	else
-	{
-		// This both are the same formula but second one is reduced.
-//		float percentage = (100.0 * handlePossition.x()) / float(maxSliderPixel-minSliderPixel);
-//		newValue = int(percentage * (parentSlider()->maximum() - parentSlider()->minimum()) / (100.0)) + parentSlider()->minimum();
-		newValue = (handlePossition.x() * (parentSlider()->maximum() - parentSlider()->minimum()) / (absoluteMaxSliderPixel-absoluteMinSliderPixel)) + parentSlider()->minimum() ;
-	}
+	if( pos < relativeMinSliderPixel )
+		pos = relativeMinSliderPixel;
+	// This both are the same formula but second one is reduced.
+//	float percentage = (100.0 * handlePossition.x()) / float(maxSliderPixel-minSliderPixel);
+//	newValue = int(percentage * (parentSlider()->maximum() - parentSlider()->minimum()) / (100.0)) + parentSlider()->minimum();
+	int newValue = ((pos-absoluteMinSliderPixel) * (parentSlider()->maximum() - parentSlider()->minimum()) / (absoluteMaxSliderPixel-absoluteMinSliderPixel)) + parentSlider()->minimum() ;
 
 	newValue = checkValidValue(newValue);
-	move( handlePossition );
+	move( pos, handleYPos() );
 	if( newValue != mValue )
 	{
 		mValue = newValue;
@@ -110,13 +103,12 @@ void QMultipleHandleSliderHandle::moveHandeToPos(int pos)
 	}
 }
 
-// Invoqued when parent slider changes size.
 void QMultipleHandleSliderHandle::updateHandlePos_fromValue()
 {
 	int minSliderPixel = minHandleXPos(false);
 	int maxSliderPixel = maxHandleXPos(false);
 
-	int location = (((mValue-parentSlider()->minimum()) * maxSliderPixel) / (parentSlider()->maximum() - parentSlider()->minimum()));
+	int location = (((mValue-parentSlider()->minimum()) * (maxSliderPixel-minSliderPixel)) / (parentSlider()->maximum() - parentSlider()->minimum())) + minSliderPixel;
 
 	move( location, handleYPos() );
 }
@@ -189,6 +181,7 @@ bool QMultipleHandleSliderHandle::event(QEvent *ev)
 		return true;
 	case QEvent::MouseButtonRelease:
 		mHandleClickXPixel = -1;
+		updateHandlePos_fromValue();
 		return true;
 	case QEvent::Leave:
 		setNormalColor();
@@ -362,7 +355,7 @@ int QMultipleHandleSlider::value(const QString &id) const
 
 void QMultipleHandleSlider::setValue(int value, const QString &id)
 {
-	mAltHandles[id]->setValue(value);
+	mAltHandles[id]->setValue(value > maximum() ? maximum() : value < minimum() ? minimum() : value);
 }
 
 void QMultipleHandleSlider::updateHandlePos(QMultipleHandleSliderHandle *handle)
